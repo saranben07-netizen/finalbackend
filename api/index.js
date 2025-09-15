@@ -2,14 +2,21 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+// Create express app
 const api = express();
+
 api.use(express.json());
 api.use(cookieParser());
 
-// ✅ Manual CORS middleware (top of stack)
-api.use(cors());
+// ✅ Fix CORS: allow only your frontend domain
+api.use(
+  cors({
+    origin: "https://chozha-hostel-frontend.vercel.app", // your frontend on vercel
+    credentials: true, // allow cookies / auth headers
+  })
+);
 
-// Routers
+// ✅ Import routers (your folder structure is "../routers/")
 import studentsupdaterouter from "../routers/studentsupdaterouter.js";
 import emailpushrouter from "../routers/emailpushrouter.js";
 import emailverifyrouter from "../routers/emailverifyrouter.js";
@@ -23,6 +30,7 @@ import editstudentsdetailsrouter from "../routers/editstudentsdetailsrouter.js";
 import attendancerouter from "../routers/attendancerouter.js";
 import showattendancerouter from "../routers/showattendance.js";
 
+// ✅ Use routers
 api.use(emailpushrouter);
 api.use(sendcoderouter);
 api.use(emailverifyrouter);
@@ -36,9 +44,9 @@ api.use(editstudentsdetailsrouter);
 api.use(attendancerouter);
 api.use(showattendancerouter);
 
-// Root route
+// ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api
+export default api;
