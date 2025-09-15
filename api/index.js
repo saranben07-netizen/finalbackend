@@ -8,15 +8,17 @@ const api = express();
 api.use(express.json());
 api.use(cookieParser());
 
-// ✅ Fix CORS: allow only your frontend domain
+// ✅ Allow ALL origins + credentials
 api.use(
   cors({
-    origin: "https://chozha-hostel-frontend.vercel.app", // your frontend on vercel
+    origin: (origin, callback) => {
+      callback(null, origin || "*"); // reflect request origin
+    },
     credentials: true, // allow cookies / auth headers
   })
 );
 
-// ✅ Import routers (your folder structure is "../routers/")
+// ✅ Import routers
 import studentsupdaterouter from "../routers/studentsupdaterouter.js";
 import emailpushrouter from "../routers/emailpushrouter.js";
 import emailverifyrouter from "../routers/emailverifyrouter.js";
