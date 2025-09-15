@@ -1,4 +1,4 @@
-import isInHostel from "./isinHostel.js";
+import isInHostel from "./isinhostel.js";
 import pool from "../database/database.js";
 
 async function attendance(req, res) {
