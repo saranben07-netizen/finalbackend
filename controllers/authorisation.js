@@ -5,7 +5,7 @@ async function authorisation(req, res, next) {
   // 1️⃣ Get tokens
   const token = req.body.token || req.headers["authorization"]?.split(" ")[1];
   const refreshToken = req.cookies.refreshToken;
-  console.log(refreshToken);
+  console.log("cookies",refreshToken);
 
   if (!token) {
     return res.status(401).json({ success: false, error: "Token missing" });
