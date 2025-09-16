@@ -8,10 +8,12 @@ const api = express();
 api.use(express.json());
 api.use(cookieParser());
 
-// ✅ Allow specific origin for credentials
+// ✅ Allow ALL origins + credentials
 api.use(
   cors({
-    origin: "https://chozha-hostel-frontend.vercel.app",
+    origin: (origin, callback) => {
+      callback(null, origin || "*"); // reflect request origin
+    },
     credentials: true, // allow cookies / auth headers
   })
 );
