@@ -21,6 +21,7 @@ api.use(
 // ✅ Import routers
 import studentsupdaterouter from "../routers/studentsupdaterouter.js";
 import emailpushrouter from "../routers/emailpushrouter.js";
+import editcomplaintrouter from "../routers/editcomplaintrouter.js";
 import emailverifyrouter from "../routers/emailverifyrouter.js";
 import sendcoderouter from "../routers/sendcoderouter.js";
 import registerrouter from "../routers/registerrouter.js";
@@ -30,7 +31,10 @@ import studentLoginRouter from "../routers/studentsLoginRouter.js";
 import adminLoginRouter from "../routers/adminLoginRouter.js";
 import editstudentsdetailsrouter from "../routers/editstudentsdetailsrouter.js";
 import attendancerouter from "../routers/attendancerouter.js";
+import fetchcomplaintforadminrouter from "../routers/fetchcomplaintforadminsrouter.js";
 import showattendancerouter from "../routers/showattendance.js";
+import registercomplaintrouter from "../routers/registercomplaintrouter.js";
+
 
 // ✅ Use routers
 api.use(emailpushrouter);
@@ -45,10 +49,13 @@ api.use(adminLoginRouter);
 api.use(editstudentsdetailsrouter);
 api.use(attendancerouter);
 api.use(showattendancerouter);
-
+api.use(registercomplaintrouter);
+api.use(editstudentsdetailsrouter);
+api.use(editcomplaintrouter);
+api.use(fetchcomplaintforadminrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api;
+api.listen(3001);
