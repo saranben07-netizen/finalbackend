@@ -9,7 +9,7 @@ api.use(express.json());
 api.use(cookieParser());
 
 // ✅ Allow ALL origins + credentials
-api.options("*", cors()); // allow preflight for all routes
+
 
 api.use(
   cors({

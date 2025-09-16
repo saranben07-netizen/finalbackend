@@ -39,6 +39,7 @@ async function studentauth(req,res,next){
       req.body.token = result.token;
       // Re-verify the new token to set req.user
       const newDecoded = jwt.verify(result.token, process.env.JWT_SECRET || "mysecret");
+      req.body.id=newDecoded.id;
       if (newDecoded.role === "student") {
         req.user = newDecoded;
         return next();
