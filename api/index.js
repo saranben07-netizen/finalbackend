@@ -36,6 +36,7 @@ import attendancerouter from "../routers/attendancerouter.js";
 import fetchcomplaintforadminrouter from "../routers/fetchcomplaintforadminsrouter.js";
 import showattendancerouter from "../routers/showattendance.js";
 import registercomplaintrouter from "../routers/registercomplaintrouter.js";
+import fetchcomplaintsforstudentsrouter from "../routers/fetchcomplaintsforstudentsrouter.js";
 
 
 // ✅ Use routers
@@ -55,9 +56,10 @@ api.use(registercomplaintrouter);
 api.use(editstudentsdetailsrouter);
 api.use(editcomplaintrouter);
 api.use(fetchcomplaintforadminrouter);
+api.use(fetchcomplaintsforstudentsrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api;
+api.listen(3002);
