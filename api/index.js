@@ -23,6 +23,7 @@ api.use(
 // ✅ Import routers
 import studentsupdaterouter from "../routers/studentsupdaterouter.js";
 import emailpushrouter from "../routers/emailpushrouter.js";
+import resolvecomplaintsforadmins from "../routers/resolvecomplaintsforadmins.js";
 import editcomplaintrouter from "../routers/editcomplaintrouter.js";
 import emailverifyrouter from "../routers/emailverifyrouter.js";
 import sendcoderouter from "../routers/sendcoderouter.js";
@@ -57,6 +58,7 @@ api.use(editstudentsdetailsrouter);
 api.use(editcomplaintrouter);
 api.use(fetchcomplaintforadminrouter);
 api.use(fetchcomplaintsforstudentsrouter);
+api.use(resolvecomplaintsforadmins);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
