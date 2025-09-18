@@ -12,7 +12,7 @@ export async function studentLoginController(req, res) {
 
     // Check if student exists
    const result = await pool.query(
-  "SELECT id, email, password, name FROM students WHERE email = $1",
+  "SELECT * FROM students WHERE email = $1",
   [email]
 );
 
