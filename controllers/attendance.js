@@ -6,6 +6,7 @@ async function attendance(req, res) {
     const studentlat = parseFloat(req.body.lat);
     const studentlng = parseFloat(req.body.lng);
     const id = parseInt(req.body.id);
+    
 
     // Validate inputs
     if (isNaN(studentlat) || isNaN(studentlng) || isNaN(id)) {
@@ -15,7 +16,7 @@ async function attendance(req, res) {
     const hostellat = 10.695119265291055;
     const hostellng = 78.97738689667436;
 
-    const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 5000);
+    const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 500);
 
     if (!isinHostel) {
       return res.status(403).json({ success: false, error: "Student not inside hostel" });

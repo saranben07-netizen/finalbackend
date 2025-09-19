@@ -21,6 +21,9 @@ async function refreshTokenHandler(refreshToken) {
       "SELECT tokens FROM refreshtokens WHERE user_id = $1",
       [decoded.id]
     );
+    console.log("decoded",decoded.id);
+    console.log("result",result);
+    console.log("refresh",result.rows[0].token);
 
     if (!result.rows.length || result.rows[0].tokens !== refreshToken) {
       // Token not found or mismatch
