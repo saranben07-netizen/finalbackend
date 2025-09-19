@@ -64,4 +64,4 @@ api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-api.listen(3002);
+export default api
