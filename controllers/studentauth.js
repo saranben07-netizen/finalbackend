@@ -33,7 +33,8 @@ async function studentauth(req,res,next){
     if (!refreshToken) {
       return res.status(403).json({ success: false, error: "No refresh token" });
     }
-
+    console.log("fnrkfnkrn",refreshToken)
+     
     const result = await refreshTokenHandler(refreshToken);
     console.log(result);
     if (result.success) {
