@@ -59,10 +59,11 @@ export async function adminLoginController(req, res) {
     // Store in cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure:true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
     const { password:password1, ...userData } = user;
 
 
