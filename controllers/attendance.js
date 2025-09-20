@@ -16,8 +16,9 @@ async function attendance(req, res) {
     
     const hostellat = 10.694544739128162;
     const hostellng = 78.97900160177903;
+    
 
-    const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 500);
+    const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 5000);
 
     if (!isinHostel) {
       return res.status(403).json({ success: false, error: "Student not inside hostel" });

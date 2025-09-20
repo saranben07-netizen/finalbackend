@@ -5,7 +5,9 @@ import cors from "cors";
 // Create express app
 const api = express();
 
-api.use(express.json());
+api.use(express.json({ limit: "10mb" })); 
+api.use(express.urlencoded({ limit: "10mb", extended: true }));
+
 api.use(cookieParser());
 
 // ✅ Allow ALL origins + credentials
@@ -66,4 +68,6 @@ api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api
+
+
+export default api;

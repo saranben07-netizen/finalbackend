@@ -23,7 +23,7 @@ async function refreshTokenHandler(refreshToken) {
     );
     console.log("decoded",decoded.id);
     console.log("result",result);
-    console.log("refresh",result.rows[0].token);
+    console.log("refresh",result.rows[0].tokens);
 
     if (!result.rows.length || result.rows[0].tokens !== refreshToken) {
       // Token not found or mismatch
