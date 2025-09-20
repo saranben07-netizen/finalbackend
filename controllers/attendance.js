@@ -13,8 +13,9 @@ async function attendance(req, res) {
       return res.status(400).json({ success: false, error: "Invalid input" });
     }
 
-    const hostellat = 10.695119265291055;
-    const hostellng = 78.97738689667436;
+    
+    const hostellat = 10.694544739128162;
+    const hostellng = 78.97900160177903;
 
     const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 500);
 
