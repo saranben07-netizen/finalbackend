@@ -41,6 +41,12 @@ import showattendancerouter from "../routers/showattendance.js";
 import registercomplaintrouter from "../routers/registercomplaintrouter.js";
 import fetchcomplaintsforstudentsrouter from "../routers/fetchcomplaintsforstudentsrouter.js";
 import complaintstatuschangeforadminrouter from "../routers/complaintstatuschangeforadminrouter.js";
+import forgotpasswordemailpushrouter from "../routers/forgotpasswordemailpushrouter.js";
+import forgotpasswordsendcoderouter from "../routers/forgotpasswordsendcoderouter.js";
+import verifycodeforgotrouter from "../routers/verifycodeforgotrouter.js";
+import changepassowordrouter from "../routers/changepasswordrouter.js";
+import test from "../routers/test.js";
+
 
 
 // ✅ Use routers
@@ -63,6 +69,11 @@ api.use(fetchcomplaintforadminrouter);
 api.use(fetchcomplaintsforstudentsrouter);
 api.use(resolvecomplaintsforadmins);
 api.use(complaintstatuschangeforadminrouter);
+api.use(forgotpasswordemailpushrouter);
+api.use(forgotpasswordsendcoderouter);
+api.use(verifycodeforgotrouter);
+api.use(changepassowordrouter);
+api.use(test);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
@@ -70,4 +81,4 @@ api.get("/", (req, res) => {
 
 
 
-export default api;
+api.listen(3001);
