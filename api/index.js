@@ -47,6 +47,8 @@ import verifycodeforgotrouter from "../routers/verifycodeforgotrouter.js";
 import changepassowordrouter from "../routers/changepasswordrouter.js";
 import test from "../routers/test.js";
 import adminrejectrouter from "../routers/adminrejectrouter.js";
+import absentrouter from "../routers/absentrouter.js";
+import changeattendanceforadminrouter from "../routers/changeattendancebyadminrouter.js";
 
 
 
@@ -75,12 +77,12 @@ api.use(forgotpasswordsendcoderouter);
 api.use(verifycodeforgotrouter);
 api.use(changepassowordrouter);
 api.use(test);
+api.use(absentrouter);
 api.use(adminrejectrouter);
+api.use(changeattendanceforadminrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
-
-
 
 export default api
