@@ -46,6 +46,7 @@ import forgotpasswordsendcoderouter from "../routers/forgotpasswordsendcoderoute
 import verifycodeforgotrouter from "../routers/verifycodeforgotrouter.js";
 import changepassowordrouter from "../routers/changepasswordrouter.js";
 import test from "../routers/test.js";
+import adminrejectrouter from "../routers/adminrejectrouter.js";
 
 
 
@@ -74,6 +75,7 @@ api.use(forgotpasswordsendcoderouter);
 api.use(verifycodeforgotrouter);
 api.use(changepassowordrouter);
 api.use(test);
+api.use(adminrejectrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
