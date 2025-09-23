@@ -83,4 +83,4 @@ api.get("/", (req, res) => {
 
 
 
-export default api;
+export default api
