@@ -17,6 +17,8 @@ async function changepassword(req,res) {
 
       const update1 = await pool.query(`UPDATE students SET password = $1 WHERE email = $2`,[hashedPassword,email]);
       if(update1.rowCount > 0){
+         await pool.query(`DELETE FROM emailverificationforgot WHERE email = $1`, [email]);
+
           return  res.json({success:true ,message:"password changed successfully"})
       }
 
