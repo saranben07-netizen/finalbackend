@@ -14,7 +14,8 @@ async function studentauth(req,res,next){
         const decoded = jwt.verify(token,"mysecret");
         if(decoded.role==="student"){
             console.log(decoded.role);
-            req.body.id = result.id;
+         
+            req.body.id = decoded.id;
               
             return next();
 
