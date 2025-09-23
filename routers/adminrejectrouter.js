@@ -1,5 +1,6 @@
 import express from "express";
 import adminreject from "../controllers/adminreject.js";
+import studentauth from "../controllers/studentauth.js";
 const adminrejectrouter = express.Router();
-adminreject.use("/adminreject",adminrejectrouter);
+adminrejectrouter.use("/adminreject",studentauth,adminrejectrouter);
 export default adminrejectrouter;
