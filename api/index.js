@@ -51,6 +51,8 @@ import test from "../routers/test.js";
 import adminrejectrouter from "../routers/adminrejectrouter.js";
 import absentrouter from "../routers/absentrouter.js";
 import changeattendanceforadminrouter from "../routers/changeattendancebyadminrouter.js";
+import adddepartmentsrouter from "../routers/adddepartmentsrouter.js";
+import fetchdepartmentsrouter from "../routers/fetchdepartmentsrouter.js";
 
 
 
@@ -82,9 +84,11 @@ api.use(test);
 api.use(absentrouter);
 api.use(adminrejectrouter);
 api.use(changeattendanceforadminrouter);
+api.use(adddepartmentsrouter);
+api.use(fetchdepartmentsrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api;
+export default api
