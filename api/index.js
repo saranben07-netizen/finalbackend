@@ -1,6 +1,8 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Create express app
 const api = express();
@@ -85,4 +87,4 @@ api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api
+export default api;

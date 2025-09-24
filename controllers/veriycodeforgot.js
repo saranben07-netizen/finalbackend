@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 async function veriycodeforgot(req, res) {
   const { email, code ,token} = req.body;
   const result = await pool.query(`SELECT * FROM  emailverificationforgot WHERE email = $1`, [email]);
-  const token1 = jwt.sign({ email }, "mysct");
+  const token1 = jwt.sign({ email }, process.env.SECRET_KEY);
   if (result.rowCount == 0) {
     return res.json({ success: false, message: "No verification process found for this email. Please initiate the forgot password process." });
   }

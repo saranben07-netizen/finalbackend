@@ -13,7 +13,7 @@ async function authorisation(req, res, next) {
 
   try {
     // 2️⃣ Verify access token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "mysecret");
+    const decoded = jwt.verify(token, process.env.SECRET_KEY || "mysecret");
 
     if (decoded.role === "admin") {
       req.user = decoded;
@@ -34,7 +34,7 @@ async function authorisation(req, res, next) {
       // Set the new token in the request for the next middleware
       req.body.token = result.token;
       // Re-verify the new token to set req.user
-      const newDecoded = jwt.verify(result.token, process.env.JWT_SECRET || "mysecret");
+      const newDecoded = jwt.verify(result.token, process.env.SECRET_KEY || "mysecret");
       if (newDecoded.role === "admin") {
         req.user = newDecoded;
         return next();

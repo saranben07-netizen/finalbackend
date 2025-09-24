@@ -31,14 +31,14 @@ export async function studentLoginController(req, res) {
     // Generate tokens
     const token = jwt.sign(
       { id: user.id, email: user.email, role: "student" },
-      process.env.JWT_SECRET || "mysecret",
-      { expiresIn: "2m" }
+      process.env.SECRET_KEY || "mysecret",
+      { expiresIn: process.env.TOKEN_LIFE }
     );
 
     const refreshToken = jwt.sign(
       { id: user.id, email: user.email, role: "student" },
-      process.env.JWT_SECRET || "mysecret",
-      { expiresIn: "7d" }
+      process.env.SECRET_KEY || "mysecret",
+      { expiresIn: process.env.REFRESH_TOKEN_LIFE }
     );
 
     // Save refresh token
@@ -53,13 +53,13 @@ export async function studentLoginController(req, res) {
     const { password:password1, ...userData } = user;
 
 
-
+   const maxAge = Number(process.env.REFRESH_TOKEN_MAX_AGE_DAYS) * 24 * 60 * 60 * 1000;
     // Store in cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure:true,
       sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: maxAge,
     });
 
     return res.status(200).json({

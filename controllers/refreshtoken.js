@@ -10,7 +10,7 @@ async function refreshTokenHandler(refreshToken) {
     // ✅ Verify refresh token first (checks signature & expiry)
     let decoded;
     try {
-      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || "mysecret");
+      decoded = jwt.verify(refreshToken, process.env.SECRET_KEY || "mysecret");
     } catch (err) {
       console.error("JWT verification failed:", err.message);
       return { success: false, message: "Invalid or expired refresh token" };
@@ -33,7 +33,7 @@ async function refreshTokenHandler(refreshToken) {
     // ✅ Issue new access token
     const newAccessToken = jwt.sign(
       { id: decoded.id, email: decoded.email, role: decoded.role },
-      process.env.JWT_SECRET || "mysecret",
+      process.env.SECRET_KEY || "mysecret",
       { expiresIn: "2m" } // Consider 15m–30m in production
     );
 

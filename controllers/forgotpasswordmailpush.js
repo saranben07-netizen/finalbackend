@@ -10,7 +10,7 @@ async function forgotpasswordmailpush(req, res) {
     }
 
     //generating token
-    const token = jwt.sign({ email }, "mysct");
+    const token = jwt.sign({ email }, process.env.SECRET_KEY);
 
     //checking if email is registered
     const fetchstudent = await pool.query("SELECT * FROM students WHERE email = $1",[email]);

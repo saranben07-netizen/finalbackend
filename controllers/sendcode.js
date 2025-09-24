@@ -41,13 +41,13 @@ async function sendcode(req, res) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "benmega500@gmail.com",
-        pass: "xsozotdvwyrqpgiu"
+        user: process.env.EMAIL_ID,
+        pass: process.env.PASS_KEY
       }
     });
 
     const mailOptions = {
-      from: "benmega500@gmail.com",
+      from: process.env.EMAIL_ID,
       to: email,
       subject: "Your Verification Code",
       text: `Your verification code is: ${code}`

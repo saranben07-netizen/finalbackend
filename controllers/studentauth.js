@@ -11,7 +11,7 @@ async function studentauth(req,res,next){
 
     try{
 
-        const decoded = jwt.verify(token,"mysecret");
+        const decoded = jwt.verify(token,process.env.SECRET_KEY);
         if(decoded.role==="student"){
             console.log(decoded.role);
          
@@ -43,7 +43,7 @@ async function studentauth(req,res,next){
       // Set the new token in the request for the next middleware
       req.body.token = result.token;
       // Re-verify the new token to set req.user
-      const newDecoded = jwt.verify(result.token, process.env.JWT_SECRET || "mysecret");
+      const newDecoded = jwt.verify(result.token, process.env.SECRET_KEY || "mysecret");
       req.body.id=newDecoded.id;
       console.log("kvfknv",req.body.id);
       if (newDecoded.role === "student") {

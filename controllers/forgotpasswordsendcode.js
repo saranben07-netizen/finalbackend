@@ -9,7 +9,7 @@ async function forgotpasswordsendcode(req, res) {
     if(!email && !token){
         return res.json({success:false,message:"Email is required"});
     }
-    const token1 = jwt.sign({ email }, "mysct");
+    const token1 = jwt.sign({ email }, process.env.SECRET_KEY);
 
     const result = await pool.query(`SELECT * FROM  emailverificationforgot WHERE email = $1`,[email]);
     if(result.rowCount==0){

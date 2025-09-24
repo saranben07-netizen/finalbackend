@@ -14,8 +14,8 @@ async function attendance(req, res) {
     }
 
     
-    const hostellat = 10.694544739128162;
-    const hostellng = 78.97900160177903;
+    const hostellat = process.env.HOSTEL_LAT;
+    const hostellng = process.env.HOSTEL_LNG ;
     
 
     const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 5000);
