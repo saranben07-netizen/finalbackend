@@ -32,7 +32,7 @@ export async function studentLoginController(req, res) {
     const token = jwt.sign(
       { id: user.id, email: user.email, role: "student" },
       process.env.SECRET_KEY || "mysecret",
-      { expiresIn: process.env.TOKEN_LIFE }
+      { expiresIn: process.env.TOKENLIFE  }
     );
 
     const refreshToken = jwt.sign(
