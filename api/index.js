@@ -93,5 +93,4 @@ api.get("/", (req, res) => {
 });
 
 
-
 export default api

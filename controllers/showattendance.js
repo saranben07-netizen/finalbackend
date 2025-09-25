@@ -14,7 +14,19 @@ async function showattendance(req, res) {
     const cleanedObject = cleanObject(data);
 
     if (Object.keys(cleanedObject).length === 0) {
-      return res.status(400).json({ success: false, message: "No valid fields to filter" });
+     
+       const query = `
+      SELECT a.id as attendance_id, a.date, a.status, 
+             s.id as student_id, s.name, s.department, s.academic_year
+      FROM attendance a
+      INNER JOIN students s
+      ON a.student_id = s.id
+      ORDER BY s.name;
+    `;
+
+        const result = await pool.query(query);
+        return res.json({ success: true, data: result.rows ,token});
+
     }
 
     const keys = Object.keys(cleanedObject);
