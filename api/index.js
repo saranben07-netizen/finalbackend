@@ -17,12 +17,11 @@ api.use(cookieParser());
 
 api.use(
   cors({
-    origin: (origin, callback) => {
-      callback(null, origin || "*"); // reflect request origin
-    },
-    credentials: true, // allow cookies / auth headers
+    origin: true,   // reflect request origin
+    credentials: true,
   })
 );
+
 
 // ✅ Import routers
 import studentsupdaterouter from "../routers/studentsupdaterouter.js";
@@ -92,5 +91,7 @@ api.use(editdepartmentrouter);
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
+
+
 
 export default api
