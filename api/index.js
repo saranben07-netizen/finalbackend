@@ -60,6 +60,7 @@ import pushannocementrouter from "../routers/pushannocement.js";
 import fetchannocementrouter from "../routers/fetchannocementrouter.js";
 import deletedepartmentrouter from "../routers/deletedepartmentrouter.js";
 import sendNotificationToStudentsrouter from "../routers/sendnotificationrouter.js";
+import fetchNotificationForStudentsrouter from "../routers/fetchNotificationForStudentsrouter.js";
 
 
 
@@ -100,10 +101,11 @@ api.use(pushannocementrouter);
 api.use(fetchannocementrouter)
 api.use(deletedepartmentrouter);
 api.use(sendNotificationToStudentsrouter);
+api.use(fetchNotificationForStudentsrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
 
-export default api
+api.listen(3002)
