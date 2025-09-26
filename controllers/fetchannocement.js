@@ -15,10 +15,13 @@ async function fetchannocement(req, res) {
 
           const keys = Object.keys(cleanedObject);
           const values = Object.values(cleanedObject);
+          console.log(values)
           const whereString = keys.map((key, i) => `${key} = $${i + 1}`).join(" AND ");
-          const query =`SELECT FROM  annocements  WHERE whereString`
-          console.log(query);
-          return res.json({success:true});
+          const query =`SELECT  * FROM  annocements  WHERE ${whereString}`
+          console.log(query,values);
+          const result = await pool.query(query,values);
+          console.log(result)
+          return res.json({success:true,data:result.rows});
    }
  
 

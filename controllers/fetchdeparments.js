@@ -6,7 +6,7 @@ async function fetchdepartments(req, res) {
     const result = await pool.query(`SELECT * FROM departments`);
     
     // ✅ Convert rows into list of strings
-    const departments = result.rows.map(row => row.department);
+    
 
     return res.json({ success: true, result: result.rows });
   } catch (error) {
