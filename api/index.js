@@ -53,6 +53,11 @@ import changeattendanceforadminrouter from "../routers/changeattendancebyadminro
 import adddepartmentsrouter from "../routers/adddepartmentsrouter.js";
 import fetchdepartmentsrouter from "../routers/fetchdepartmentsrouter.js";
 import editdepartmentrouter from "../routers/editdepartmentrouter.js";
+import promotionrouter from "../routers/promotionrouter.js";
+import exportAttendancerouter from "../routers/exportattendancerouter.js";
+import pushannocementrouter from "../routers/pushannocement.js";
+import fetchcomplaintforadminrouter from "../routers/fetchcomplaintforadminsrouter.js";
+import fetchannocementrouter from "../routers/fetchannocementrouter.js";
 
 
 
@@ -87,6 +92,10 @@ api.use(changeattendanceforadminrouter);
 api.use(adddepartmentsrouter);
 api.use(fetchdepartmentsrouter);
 api.use(editdepartmentrouter);
+api.use(promotionrouter);
+api.use(exportAttendancerouter);
+api.use(pushannocementrouter);
+api.use(fetchannocementrouter)
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });

@@ -5,6 +5,8 @@ async function showattendance(req, res) {
     const { token, ...data } = req.body;
 
     // Remove null or empty values
+
+  
     function cleanObject(obj) {
       return Object.fromEntries(
         Object.entries(obj).filter(([_, value]) => value !== null && value !== "")
@@ -34,6 +36,7 @@ async function showattendance(req, res) {
 
     // Generate dynamic WHERE clause
     const whereString = keys.map((key, i) => `${key} = $${i + 1}`).join(" AND ");
+
 
     const query = `
       SELECT a.id as attendance_id, a.date, a.status, 
