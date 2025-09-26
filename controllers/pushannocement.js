@@ -13,7 +13,7 @@ async function pushannocement(req, res) {
         }
 
         const queryText = `
-            INSERT INTO annoncements (title, message, priority, target, scheduled_date)
+            INSERT INTO annocements (title, message, priority, target, scheduled_date)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING *;
         `;
