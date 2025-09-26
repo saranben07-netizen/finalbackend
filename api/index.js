@@ -56,7 +56,7 @@ import editdepartmentrouter from "../routers/editdepartmentrouter.js";
 import promotionrouter from "../routers/promotionrouter.js";
 import exportAttendancerouter from "../routers/exportattendancerouter.js";
 import pushannocementrouter from "../routers/pushannocement.js";
-import fetchcomplaintforadminrouter from "../routers/fetchcomplaintforadminsrouter.js";
+
 import fetchannocementrouter from "../routers/fetchannocementrouter.js";
 
 
