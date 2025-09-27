@@ -62,6 +62,7 @@ import deletedepartmentrouter from "../routers/deletedepartmentrouter.js";
 import sendNotificationToStudentsrouter from "../routers/sendnotificationrouter.js";
 import fetchNotificationForStudentsrouter from "../routers/fetchNotificationForStudentsrouter.js";
 import dismissannouncementforstudentrouter from "../routers/dismissnotificationforstudentsrouter.js";
+import pushmessbillrouter from "../routers/pushmessbillrouter.js";
 
 
 
@@ -105,6 +106,7 @@ api.use(sendNotificationToStudentsrouter);
 api.use(fetchNotificationForStudentsrouter);
 api.use(editannouncementforadminrouter);
 api.use(dismissannouncementforstudentrouter);
+api.use(pushmessbillrouter);
 // ✅ Root route
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
