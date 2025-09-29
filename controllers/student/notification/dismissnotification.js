@@ -12,31 +12,30 @@ async function dismissnotification(req, res) {
       });
     }
 
-    // 2️⃣ Execute the update query
+    // 2️⃣ Execute the DELETE query
     const result = await pool.query(
-      `UPDATE students_dashboard_notifications 
-       SET dismiss = TRUE 
+      `DELETE FROM students_dashboard_notifications 
        WHERE id = $1`,
       [notification_id]
     );
 
-    // 3️⃣ Check if any row was updated
+    // 3️⃣ Check if any row was deleted
     if (result.rowCount > 0) {
       return res.json({
         success: true,
-        message: "Notification dismissed successfully",
+        message: "Notification deleted successfully",
       });
     } else {
       return res.status(404).json({
         success: false,
-        message: "Notification not found or already dismissed",
+        message: "Notification not found",
       });
     }
   } catch (error) {
-    console.error("Error dismissing notification:", error);
+    console.error("Error deleting notification:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error while dismissing notification",
+      message: "Server error while deleting notification",
     });
   }
 }
