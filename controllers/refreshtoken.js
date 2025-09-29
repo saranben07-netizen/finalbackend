@@ -34,7 +34,7 @@ async function refreshTokenHandler(refreshToken) {
     const newAccessToken = jwt.sign(
       { id: decoded.id, email: decoded.email, role: decoded.role },
       process.env.SECRET_KEY || "mysecret",
-      { expiresIn: "2m" } // Consider 15m–30m in production
+      {  expiresIn: process.env.TOKENLIFE } // Consider 15m–30m in production
     );
 
     return { success: true, token: newAccessToken };
