@@ -4,18 +4,18 @@ import nodemailer from "nodemailer";
 
 async function exportAttendance(req, res) {
   try {
-    const { from, to, email, delete1 } = req.body;
+    const { from, to, email, delete1,token } = req.body;
 
     if (!from || !to) {
       return res
         .status(400)
-        .json({ success: false, error: "'from' and 'to' dates are required" });
+        .json({ success: false, error: "'from' and 'to' dates are required",token});
     }
 
     if (!email) {
       return res
         .status(400)
-        .json({ success: false, error: "Recipient email is required" });
+        .json({ success: false, error: "Recipient email is required" ,token});
     }
 
     // Ensure correct DATE format for Postgres
@@ -34,7 +34,7 @@ async function exportAttendance(req, res) {
     const data = result.rows;
 
     if (!data.length) {
-      return res.json({ success: false, message: "No attendance records found" });
+      return res.json({ success: false, message: "No attendance records found" ,token});
     }
 
     // Convert to CSV
@@ -82,19 +82,19 @@ async function exportAttendance(req, res) {
 
       return res.json({
         success: true,
-        message: "Attendance CSV sent via email successfully",
+        message: "Attendance CSV sent via email successfully",token
       });
     } catch (err) {
       console.error("Email send error:", err.stack || err);
       return res
         .status(500)
-        .json({ success: false, error: "Failed to send email" });
+        .json({ success: false, error: "Failed to send email",token });
     }
   } catch (error) {
     console.error("Error in exportAttendance:", error.stack || error);
     return res
       .status(500)
-      .json({ success: false, error: "Internal server error" });
+      .json({ success: false, error: "Internal server error",token });
   }
 }
 

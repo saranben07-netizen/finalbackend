@@ -43,7 +43,7 @@ async function fetchstudent(req, res) {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: err.message,
+      error: err.message,token
     });
   }
 }

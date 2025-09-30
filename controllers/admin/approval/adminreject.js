@@ -8,14 +8,14 @@ async function adminreject(req, res) {
     if (!registerno) {
       return res.status(400).json({
         success: false,
-        message: "Registration number is required",
+        message: "Registration number is required",token
       });
     }
 
     if (!reason) {
       return res.status(400).json({
         success: false,
-        message: "Rejection reason is required",
+        message: "Rejection reason is required",token
       });
     }
 
@@ -32,7 +32,7 @@ async function adminreject(req, res) {
     if (updateResult.rowCount === 0) {
       return res.status(404).json({
         success: false,
-        message: "No student found with this registration number",
+        message: "No student found with this registration number",token
       });
     }
 
@@ -56,7 +56,7 @@ async function adminreject(req, res) {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: err.message,
+      error: err.message,token
     });
   }
 }

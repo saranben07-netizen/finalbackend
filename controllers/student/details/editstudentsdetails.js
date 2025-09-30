@@ -6,7 +6,7 @@ async function editstudentsdetails(req, res) {
     const { id,token, ...data } = data1;
 
     if (!id) {
-      return res.status(400).json({ success: false, message: "Student ID is required" });
+      return res.status(400).json({ success: false, message: "Student ID is required",token });
     }
 
     // 🧹 Clean object (remove null/empty values)
@@ -19,7 +19,7 @@ async function editstudentsdetails(req, res) {
     const cleanedobject = cleanObject(data);
 
     if (Object.keys(cleanedobject).length === 0) {
-      return res.status(400).json({ success: false, message: "No valid fields to update" });
+      return res.status(400).json({ success: false, message: "No valid fields to update",token });
     }
 
     const keys = Object.keys(cleanedobject);
@@ -34,16 +34,16 @@ async function editstudentsdetails(req, res) {
     const result = await pool.query(query, values);
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ success: false, message: "Student not found" });
+      return res.status(404).json({ success: false, message: "Student not found",token });
     }
 
-    res.json({ success: true, message: "Student updated successfully" });
+    res.json({ success: true, message: "Student updated successfully" ,token});
   } catch (error) {
     console.error("Error updating student:", error.message);
     res.status(500).json({
       success: false,
       message: "An error occurred while updating the student",
-      error: error.message,
+      error: error.message,token
     });
   }
 }

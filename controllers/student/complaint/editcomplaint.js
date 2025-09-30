@@ -2,13 +2,13 @@ import pool from "../../../database/database.js";
 
 async function editcomplaint(req, res) {
   try {
-    const { complaint_id, title, description, category, priority } = req.body;
+    const { complaint_id, title, description, category, priority,token } = req.body;
     console.log("Incoming data:", complaint_id, title, description, category, priority);
 
     if (!complaint_id) {
       return res.status(400).json({
         success: false,
-        message: "Complaint ID is required",
+        message: "Complaint ID is required",token
       });
     }
 
@@ -29,21 +29,21 @@ async function editcomplaint(req, res) {
     if (result.rowCount === 0) {
       return res.status(404).json({
         success: false,
-        message: "Complaint not found",
+        message: "Complaint not found",token
       });
     }
 
     return res.json({
       success: true,
       message: "Complaint updated successfully",
-      complaint: result.rows[0],
+      complaint: result.rows[0],token
     });
 
   } catch (err) {
     console.error("Error editing complaint:", err);
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: "Internal server error",token
     });
   }
 }

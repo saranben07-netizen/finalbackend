@@ -21,7 +21,7 @@ async function fetchcomplaintforadmins(req, res) {
          return res.json({
       success: true,
       count: result1.rowCount,
-      data: result1.rows,
+      data: result1.rows,token
     });
       
     }
@@ -37,21 +37,21 @@ async function fetchcomplaintforadmins(req, res) {
     if (result.rowCount === 0) {
       return res.json({
         success: false,
-        message: "No complaints found",
+        message: "No complaints found",token
       });
     }
 
     return res.json({
       success: true,
       count: result.rowCount,
-      data: result.rows,
+      data: result.rows,token
     });
 
   } catch (err) {
     console.error("Error fetching complaints for admins:", err);
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: "Internal server error",token
     });
   }
 }

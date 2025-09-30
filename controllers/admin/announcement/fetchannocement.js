@@ -48,7 +48,7 @@ async function fetchannocement(req, res) {
     console.error("Error fetching announcements:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching announcements",
+      message: "Server error while fetching announcements",token
     });
   }
 }

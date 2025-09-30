@@ -2,13 +2,13 @@ import pool from "../../../database/database.js";
 
 async function editdepartment(req, res) {
   try {
-    const { oldDepartment, newDepartment } = req.body;
+    const { oldDepartment, newDepartment ,token} = req.body;
 
     // ✅ Validate input
     if (!oldDepartment || !newDepartment) {
       return res.status(400).json({
         success: false,
-        message: "Both oldDepartment and newDepartment are required",
+        message: "Both oldDepartment and newDepartment are required",token
       });
     }
 
@@ -21,11 +21,11 @@ async function editdepartment(req, res) {
     );
 
     if (result.rowCount > 0) {
-      return res.json({ success: true, message: "Department updated successfully" });
+      return res.json({ success: true, message: "Department updated successfully",token });
     } else {
       return res.status(404).json({
         success: false,
-        message: "Department not found",
+        message: "Department not found",token
       });
     }
   } catch (error) {
@@ -33,7 +33,7 @@ async function editdepartment(req, res) {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message,
+      error: error.message,token
     });
   }
 }

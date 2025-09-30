@@ -7,11 +7,12 @@ async function absent(req, res) {
     const studentlng = parseFloat(req.body.lng);
     const id = parseInt(req.body.id);
     console.log(studentlat,studentlng,id);
+    const token = req.body.token
     
 
     // Validate inputs
     if (isNaN(studentlat) || isNaN(studentlng) || isNaN(id)) {
-      return res.status(400).json({ success: false, error: "Invalid input" });
+      return res.status(400).json({ success: false, error: "Invalid input",token });
     }
 
     
@@ -22,7 +23,7 @@ async function absent(req, res) {
     const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 5000);
 
     if (isinHostel) {
-      return res.status(403).json({ success: false, error: "Student  inside hostel" });
+      return res.status(403).json({ success: false, error: "Student  inside hostel",token });
     }
 
     // Insert attendance
@@ -41,7 +42,7 @@ async function absent(req, res) {
     return res.json({ success: true, attendance: result.rows[0] ,token:req.body.token});
   } catch (err) {
     console.error("Error marking attendance:", err);
-    return res.status(500).json({ success: false, error: "Server error" });
+    return res.status(500).json({ success: false, error: "Server error" ,token});
   }
 }
 

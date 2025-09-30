@@ -4,7 +4,7 @@ async function editannouncement(req, res) {
     const { token, announcement_id, ...data } = req.body;
 
     if (!announcement_id) {
-        return res.status(400).json({ success: false, message: "announcement_id is required" });
+        return res.status(400).json({ success: false, message: "announcement_id is required", token:req.body.token });
     }
 
     // Remove null or empty values
@@ -17,7 +17,7 @@ async function editannouncement(req, res) {
     const cleanedObject = cleanObject(data);
 
     if (Object.keys(cleanedObject).length === 0) {
-        return res.status(400).json({ success: false, message: "No valid fields to update" });
+        return res.status(400).json({ success: false, message: "No valid fields to update" ,token:req.body.token});
     }
 
     const keys = Object.keys(cleanedObject);
@@ -35,7 +35,7 @@ async function editannouncement(req, res) {
         const result = await pool.query(query, values);
 
         if (result.rowCount === 0) {
-            return res.status(404).json({ success: false, message: "Announcement not found" });
+            return res.status(404).json({ success: false, message: "Announcement not found",token:req.body.token });
         }
 
         const updatedAnnouncement = result.rows[0];
@@ -69,11 +69,11 @@ async function editannouncement(req, res) {
             }
         }
 
-        res.json({ success: true, updated: updatedAnnouncement });
+        res.json({ success: true, updated: updatedAnnouncement ,token:req.body.token });
 
     } catch (err) {
         console.error("Error updating announcement:", err);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error" ,token:req.body.token});
     }
 }
 

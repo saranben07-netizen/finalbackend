@@ -8,7 +8,7 @@ async function approve(req, res) {
     if (!registerno) {
       return res.status(400).json({
         success: false,
-        message: "Registration number is required",
+        message: "Registration number is required",token
       });
     }
 
@@ -25,7 +25,7 @@ async function approve(req, res) {
     if (updateResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No student found with this registration number",
+        message: "No student found with this registration number",token
       });
     }
 
@@ -43,7 +43,7 @@ async function approve(req, res) {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: err.message,
+      error: err.message,token
     });
   }
 }

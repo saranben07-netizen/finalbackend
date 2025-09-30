@@ -2,13 +2,13 @@ import pool from "../../../database/database.js";
 
 async function changeattendancebyadmin(req, res) {
   try {
-    const { attendance_id, update } = req.body;
+    const { attendance_id, update ,token} = req.body;
 
     // ✅ Validate input
     if (!attendance_id || !update) {
       return res.status(400).json({
         success: false,
-        message: "attendance_id and update (status) are required",
+        message: "attendance_id and update (status) are required",token
       });
     }
 
@@ -21,12 +21,12 @@ async function changeattendancebyadmin(req, res) {
       return res.status(200).json({
         success: true,
         message: "Attendance updated successfully",
-        updated_id: attendance_id,
+        updated_id: attendance_id,token
       });
     } else {
       return res.status(404).json({
         success: false,
-        message: "Attendance record not found",
+        message: "Attendance record not found",token
       });
     }
   } catch (error) {
@@ -34,7 +34,7 @@ async function changeattendancebyadmin(req, res) {
     return res.status(500).json({
       success: false,
       message: "Internal server error while updating attendance",
-      error: error.message,
+      error: error.message,token
     });
   }
 }

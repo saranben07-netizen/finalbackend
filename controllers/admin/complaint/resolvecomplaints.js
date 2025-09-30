@@ -3,9 +3,10 @@ import pool from "../../../database/database.js";
 async function resolvecomplaints(req, res) {
   try {
     const id = req.body.complaint_id;
+    const token = req.body.token
 
     if (!id) {
-      return res.status(400).json({ success: false, message: "Complaint ID is required" });
+      return res.status(400).json({ success: false, message: "Complaint ID is required",token });
     }
 
     const query = `
@@ -22,13 +23,13 @@ async function resolvecomplaints(req, res) {
     const result = await pool.query(query, [id]);
 
     if (result.rowCount === 0) {
-      return res.json({ success: false, message: "Complaint not found or already resolved" });
+      return res.json({ success: false, message: "Complaint not found or already resolved" ,token});
     }
 
-    return res.json({ success: true, data: result.rows[0] });
+    return res.json({ success: true, data: result.rows[0] ,token});
   } catch (error) {
     console.error("Error resolving complaint:", error);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error",token });
   }
 }
 

@@ -1,13 +1,13 @@
 import pool from "../../../database/database.js";
 
 async function deletedepartment(req, res) {
-  const { department_id } = req.body;
+  const { department_id,token } = req.body;
 
   // 1️⃣ Validate input
   if (!department_id) {
     return res.status(400).json({
       success: false,
-      message: "Department ID is required",
+      message: "Department ID is required",token
     });
   }
 
@@ -22,7 +22,7 @@ async function deletedepartment(req, res) {
     if (result.rowCount === 0) {
       return res.status(404).json({
         success: false,
-        message: "Department not found or already deleted",
+        message: "Department not found or already deleted",token
       });
     }
 
@@ -30,13 +30,13 @@ async function deletedepartment(req, res) {
     return res.json({
       success: true,
       message: "Department deleted successfully",
-      deletedDepartment: result.rows[0], // optional: return deleted row
+      deletedDepartment: result.rows[0], token// optional: return deleted row
     });
   } catch (error) {
     console.error("Error deleting department:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error while deleting department",
+      message: "Server error while deleting department",token
     });
   }
 }

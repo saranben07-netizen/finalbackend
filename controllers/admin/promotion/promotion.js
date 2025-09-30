@@ -4,10 +4,10 @@ import nodemailer from "nodemailer";
 
 async function promotion(req, res) {
   try {
-    const { email, isdeletefinalyear } = req.body; // recipient email for 4th-year CSV
+    const { email, isdeletefinalyear,token } = req.body; // recipient email for 4th-year CSV
 
     if (!email) {
-      return res.status(400).json({ success: false, error: "Recipient email is required" });
+      return res.status(400).json({ success: false, error: "Recipient email is required" ,token});
     }
 
     // -------------------- Handle 4th-year first: export CSV --------------------
@@ -66,12 +66,12 @@ async function promotion(req, res) {
 
     return res.json({
       success: true,
-      message: "Promotion completed successfully. 4th-year CSV sent and deleted if applicable, other years promoted.",
+      message: "Promotion completed successfully. 4th-year CSV sent and deleted if applicable, other years promoted.",token
     });
 
   } catch (error) {
     console.error("Error in promotion:", error);
-    return res.status(500).json({ success: false, error: "Internal server error" });
+    return res.status(500).json({ success: false, error: "Internal server error",token });
   }
 }
 

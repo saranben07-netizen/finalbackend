@@ -2,7 +2,7 @@ import pool from "../../../database/database.js";
 
 async function studentsupdate(req, res) {
   try {
-    const {
+    const {token,
       id,
       name,
       father_guardian_name,
@@ -59,13 +59,13 @@ async function studentsupdate(req, res) {
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: "Student not found" });
+      return res.status(404).json({ success: false, message: "Student not found",token });
     }
 
-    return res.json({ success: true, data: result.rows[0] });
+    return res.json({ success: true, data: result.rows[0] ,token});
   } catch (e) {
     console.error(e);
-    res.status(500).json({ success: false, error: e.message });
+    res.status(500).json({ success: false, error: e.message,token });
   }
 }
 

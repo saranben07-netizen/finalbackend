@@ -57,11 +57,11 @@ async function showattendance(req, res) {
       success: true,
       data: result.rows,
       token,
-      message: result.rows.length === 0 ? "No attendance records found" : undefined
+      message: result.rows.length === 0 ? "No attendance records found" : undefined,token
     });
   } catch (err) {
     console.error("Error fetching attendance:", err);
-    return res.status(500).json({ success: false, error: "Server error" });
+    return res.status(500).json({ success: false, error: "Server error" ,token});
   }
 }
 

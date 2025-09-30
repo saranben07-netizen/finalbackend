@@ -2,13 +2,13 @@ import pool from "../../../database/database.js";
 
 async function adddepartments(req, res) {
   try {
-    const { department } = req.body;
+    const { department,token } = req.body;
 
     // ✅ Validate input
     if (!department || department.trim() === "") {
       return res.status(400).json({
         success: false,
-        message: "Department name is required",
+        message: "Department name is required",token
       });
     }
 
@@ -22,12 +22,12 @@ async function adddepartments(req, res) {
       return res.status(201).json({
         success: true,
         message: "Department added successfully",
-        department: result.rows[0],
+        department: result.rows[0],token
       });
     } else {
       return res.status(500).json({
         success: false,
-        message: "Failed to add department",
+        message: "Failed to add department",token
       });
     }
   } catch (error) {
@@ -37,14 +37,14 @@ async function adddepartments(req, res) {
     if (error.code === "23505") {
       return res.status(409).json({
         success: false,
-        message: "Department already exists",
+        message: "Department already exists",token
       });
     }
 
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message,
+      error: error.message,token
     });
   }
 }

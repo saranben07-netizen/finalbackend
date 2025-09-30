@@ -8,7 +8,7 @@ async function pushannocement(req, res) {
         if (!title || !message || !priority || !target || !scheduled_date) {
             return res.status(400).json({
                 success: false,
-                message: "All fields (title, message, priority, target, scheduled_date) are required"
+                message: "All fields (title, message, priority, target, scheduled_date) are required",token:req.body.token
             });
         }
 
@@ -48,7 +48,7 @@ async function pushannocement(req, res) {
         res.status(201).json({
             success: true,
             message: "Announcement has been sent successfully",
-            data: result.rows[0]
+            data: result.rows[0],token:req.body.token
         });
 
     } catch (error) {
@@ -56,7 +56,8 @@ async function pushannocement(req, res) {
         res.status(500).json({
             success: false,
             message: "Internal server error",
-            error: error.message
+            error: error.message,
+            token:req.body.token
         });
     }
 }
