@@ -1,6 +1,7 @@
 import e from "express";
 import pool from "../../database/database.js";
 import jwt from "jsonwebtoken";
+import randomstring from "randomstring";
 
 async function forgotpasswordmailpush(req, res) {
     const {email} = req.body;
@@ -8,9 +9,16 @@ async function forgotpasswordmailpush(req, res) {
     if(!email){
         return res.json({success:false,message:"Email is required"});
     }
+    function generateRandomString(length = 10) {
+  return randomstring.generate({
+    length: length,
+    charset: "alphanumeric!@#$%^&*()"
+  });
+}
+
 
     //generating token
-    const token = jwt.sign({ email }, process.env.SECRET_KEY);
+    var token;
 
     //checking if email is registered
     const fetchstudent = await pool.query("SELECT * FROM students WHERE email = $1",[email]);
@@ -25,14 +33,11 @@ async function forgotpasswordmailpush(req, res) {
 
     //if a verification process is already ongoing
     if(already.rowCount>0){
-            const expired =  already.rows[0].expires_at;
-            if(!already.rows[0].expires_at){
-                
-                return res.json({success:true,token:already.rows[0].token});
-            }
+            const expired =  already.rows[0].entire_expire;
+           
 
             //if the previous verification process is still ongoing
-            if( expired > new Date()){
+           if (expired && expired > new Date()){
 
 
                 return res.json({success:false,message:"A verification process is already ongoing. Please check your email or try again later."});
@@ -41,12 +46,27 @@ async function forgotpasswordmailpush(req, res) {
             else{
                     if(already.rows[0].verified){
                     
-                        const updateverified = await pool.query("UPDATE emailverificationforgot SET verified = $1, step='2', token=$3 WHERE email = $2",[false,email,token]);
+
+                         const sequence =  generateRandomString();
+                         token = jwt.sign({ email,sequence }, process.env.SECRET_KEY);
+                       const updateverified = await pool.query(
+  `UPDATE emailverificationforgot 
+   SET verified = $1, 
+       step = '2', 
+       token = $3, 
+       entire_expire = NOW() + interval '10 minutes',
+       sequence = $4
+   WHERE email = $2`,
+  [false, email, token,sequence]
+);
+
                         return res.json({success:true,message:"Verification is re initailized.",token:token});
                     }
 
                     else{
-                        const updatetoken = await pool.query("UPDATE emailverificationforgot SET step='2', token=$2 WHERE email = $1",[email,token]);
+                          const sequence =  generateRandomString();
+                         token = jwt.sign({ email,sequence }, process.env.SECRET_KEY);
+                        const updatetoken = await pool.query("UPDATE emailverificationforgot SET step='2',  entire_expire = NOW() + interval '10 minutes',  sequence = $3 ,token=$2 WHERE email = $1",[email,token,sequence]);
                         return res.json({success:true,message:"Verification is pending ",token:token});
                     }
 
@@ -54,7 +74,15 @@ async function forgotpasswordmailpush(req, res) {
   
 }
 else{
-    const pushtoken = await pool.query("INSERT INTO emailverificationforgot (email, token, step,verified) VALUES ($1, $2, '2',$3)",[email,token,false]);
+      const sequence =  generateRandomString();
+    token = jwt.sign({ email,sequence }, process.env.SECRET_KEY);
+    const pushtoken = await pool.query(
+  `INSERT INTO emailverificationforgot 
+   (email, token, step, verified, entire_expire,sequence) 
+   VALUES ($1, $2, '2', $3, NOW() + interval '10 minutes',$4)`,
+  [email, token, false,sequence]
+);
+
     return res.json({success:true,message:"Verification process started.",token:token});
 
 } }

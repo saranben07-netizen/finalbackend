@@ -65,6 +65,11 @@
     <p><strong>Response (Success):</strong> <code>{ "success": true, "message": "Student login successful", "token": "jwt", "role": "student", "data": {...} }</code></p>
     <p><strong>Response (Error):</strong> <code>{ "success": false, "error": "message" }</code></p>
 
+    <h4>GET /</h4>
+    <p><strong>Description:</strong> Root endpoint to check if API is running</p>
+    <p><strong>Request:</strong> None</p>
+    <p><strong>Response:</strong> <code>{ "message": "API is running ✅" }</code></p>
+
     <h3>Account Creation</h3>
     <h4>POST /register</h4>
     <p><strong>Description:</strong> Student registration</p>
@@ -158,7 +163,7 @@
     <p><strong>Response (Error):</strong> <code>{ "success": false, "error": "message" }</code></p>
 
     <h3>Complaints</h3>
-    <h4>POST /registercomplaint</h4>
+    <h4>POST /registercomplaints</h4>
     <p><strong>Description:</strong> Register complaint</p>
     <p><strong>Headers:</strong> Authorization: Bearer token</p>
     <p><strong>Request Body:</strong> <code>{ "title": "string", "description": "string", "category": "string" (optional), "priority": "string" (optional) }</code></p>
@@ -240,13 +245,13 @@
     <p><strong>Response:</strong> <code>{ "success": true, "message": "string" }</code></p>
 
     <h3>Announcements</h3>
-    <h4>POST /pushannocement</h4>
+    <h4>POST /pushannouncement</h4>
     <p><strong>Description:</strong> Push announcement</p>
     <p><strong>Headers:</strong> Authorization: Bearer token</p>
     <p><strong>Request Body:</strong> <code>{ "title": "string", "content": "string" }</code></p>
     <p><strong>Response:</strong> <code>{ "success": true, "message": "string" }</code></p>
 
-    <h4>GET /fetchannocementforadmin</h4>
+    <h4>GET /fetchannouncementforadmin</h4>
     <p><strong>Description:</strong> Fetch announcements for admin</p>
     <p><strong>Headers:</strong> Authorization: Bearer token</p>
     <p><strong>Response:</strong> <code>{ "success": true, "announcements": [...] }</code></p>
@@ -255,6 +260,12 @@
     <p><strong>Description:</strong> Edit announcement</p>
     <p><strong>Headers:</strong> Authorization: Bearer token</p>
     <p><strong>Request Body:</strong> <code>{ "id": "number", "title": "string", "content": "string" }</code></p>
+    <p><strong>Response:</strong> <code>{ "success": true, "message": "string" }</code></p>
+
+    <h4>POST /deleteannounce</h4>
+    <p><strong>Description:</strong> Delete announcement</p>
+    <p><strong>Headers:</strong> Authorization: Bearer token</p>
+    <p><strong>Request Body:</strong> <code>{ "id": "number" }</code></p>
     <p><strong>Response:</strong> <code>{ "success": true, "message": "string" }</code></p>
 
     <h3>Notifications</h3>
