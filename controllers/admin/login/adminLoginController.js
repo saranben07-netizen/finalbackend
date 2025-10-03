@@ -51,13 +51,13 @@ export async function adminLoginController(req, res) {
     // Save refresh token
     await pool.query(
       `INSERT INTO refreshtokens (user_id, tokens, expires_at)
-       VALUES ($1, $2, NOW() + interval '7 days')
+       VALUES ($1, $2, NOW() + interval '${process.env.REFRESH_TOKEN_LIFE[0]} days')
        ON CONFLICT (user_id)
        DO UPDATE SET tokens = EXCLUDED.tokens, expires_at = EXCLUDED.expires_at`,
       [user.id, refreshToken]
     );
 
-    const maxAge = Number(process.env.REFRESH_TOKEN_MAX_AGE_DAYS) * 24 * 60 * 60 * 1000;
+    const maxAge = Number(process.env.REFRESH_TOKEN_LIFE[0] ) * 24 * 60 * 60 * 1000;
 
     // Store in cookie
     res.cookie("refreshToken", refreshToken, {

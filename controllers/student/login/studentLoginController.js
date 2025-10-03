@@ -52,8 +52,8 @@ export async function studentLoginController(req, res) {
 
     const { password:password1, ...userData } = user;
 
-
-   const maxAge = Number(process.env.REFRESH_TOKEN_MAX_AGE_DAYS) * 24 * 60 * 60 * 1000;
+  
+   const maxAge = Number(process.env.REFRESH_TOKEN_LIFE[0] ) * 24 * 60 * 60 * 1000;
     // Store in cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
