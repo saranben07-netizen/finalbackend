@@ -1,88 +1,101 @@
 import pool from "../../database/database.js";
+import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-
+import randomstring from "randomstring";
 
 async function sendcode(req, res) {
-  try {
-    const { email } = req.body;
+    const { email, token } = req.body;
 
-    // ✅ Validate email early
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required" });
+    // Handle empty email or token
+    if (!email || !token) {
+        return res.json({ success: false, message: "Email and token are required" });
     }
 
-    // ✅ Fetch latest verification record (only required fields)
-    const { rows } = await pool.query(
-      "SELECT code, expires_at FROM emailverification WHERE email = $1 ORDER BY expires_at DESC LIMIT 1",
-      [email]
+    let decode;
+    try {
+        decode = jwt.verify(token, process.env.SECRET_KEY);
+    } catch (err) {
+        return res.json({ success: false, message: "Invalid or expired token" });
+    }
+
+    const result = await pool.query(
+        `SELECT * FROM registration_email_verification WHERE email = $1`,
+        [email]
     );
 
-    const now = Date.now();
-    let code;
-
-    if (rows.length > 0) {
-      const { code: existingCode, expires_at } = rows[0];
-
-      // ✅ If current OTP is still valid, return without sending a new one
-      if (expires_at && new Date(expires_at).getTime() > now) {
-        return res.status(200).json({
-          success: true,
-          message: "OTP still valid, not expired yet",
-          expiringtime: new Date(expires_at).toISOString()
+    if (result.rowCount === 0) {
+        return res.json({
+            success: false,
+            message: "No registration verification found for this email. Please initiate the registration process."
         });
-      }
     }
 
-    // ✅ Generate new 6-digit OTP
-    code = Math.floor(100000 + Math.random() * 900000);
-    console.log("Generated new code:", code);
+    // Check if sequence matches
+    if (decode.sequence !== result.rows[0].sequence) {
+        return res.json({ success: false, message: "Token mismatch" });
+    }
 
-    // ✅ Setup email transporter with hardcoded credentials
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_ID,
-        pass: process.env.PASS_KEY
-      }
-    });
+    // Check if entire verification has expired
+    if (result.rows[0].entire_expire && result.rows[0].entire_expire < new Date()) {
+        return res.json({ success: false, message: "Verification time expired. Please start again." });
+    }
 
-    const mailOptions = {
-      from: process.env.EMAIL_ID,
-      to: email,
-      subject: "Your Verification Code",
-      text: `Your verification code is: ${code}`
-    };
+    // Check if a code was sent recently
+    if (result.rows[0].expires_at && result.rows[0].expires_at > new Date()) {
+        return res.json({ success: false, message: "A code was already sent. Please wait for 5 minutes." });
+    }
 
-    await transporter.sendMail(mailOptions);
+    // Generate random sequence for new token
+    function generateRandomString(length = 10) {
+        return randomstring.generate({
+            length: length,
+            charset: "alphanumeric!@#$%^&*()"
+        });
+    }
 
-    // ✅ Set expiry time 1 minute from now
-    const newExpire = new Date(now + 1 * 60 * 1000).toISOString();
+    // Only proceed if token and step are correct
+    if (result.rows[0].token === token && (result.rows[0].step === '2' || result.rows[0].step === '3')) {
+        // Generate 6-digit verification code
+        const code = Math.floor(100000 + Math.random() * 900000);
 
-    // ✅ Update or insert verification record (upsert pattern)
-    await pool.query(
-      `INSERT INTO emailverification (email, code, expires_at)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (email)
-       DO UPDATE SET code = EXCLUDED.code, expires_at = EXCLUDED.expires_at`,
-      [email, code, newExpire]
-    );
-    
+        // Configure email transport
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_ID,
+                pass: process.env.PASS_KEY
+            }
+        });
 
+        const mailOptions = {
+            from: process.env.EMAIL_ID,
+            to: email,
+            subject: "Your Registration Verification Code",
+            text: `Your registration verification code is: ${code}`
+        };
 
+        await transporter.sendMail(mailOptions);
 
-    
+        // Generate new sequence and token
+        const sequence = generateRandomString();
+        const newToken = jwt.sign({ email, sequence }, process.env.SECRET_KEY);
 
-    return res.status(200).json({
-      success: true,
-      message: "Verification code sent to email",
-      codeSent: true,
-      
-    });
+        // Update registration_email_verification table
+        await pool.query(
+            `UPDATE registration_email_verification
+             SET code = $2,
+                 expires_at = NOW() + interval '5 minutes',
+                 step = '3',
+                 token = $3,
+                 sequence = $4
+             WHERE email = $1`,
+            [email, code, newToken, sequence]
+        );
 
-  } catch (err) {
-    console.error("Error sending code:", err);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
+        return res.json({ success: true, message: "Verification code sent to email", code, token: newToken });
+    } else {
+        return res.json({ success: false, message: "Invalid token or step" });
+    }
 }
 
 export default sendcode;

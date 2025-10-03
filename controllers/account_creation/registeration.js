@@ -1,5 +1,6 @@
 import pool from "../../database/database.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 async function registration(req, res) {
   try {
@@ -43,9 +44,35 @@ async function registration(req, res) {
 
     // ✅ Step 1: Check verification status
     const verificationResult = await pool.query(
-      "SELECT verified FROM emailverification WHERE email = $1 LIMIT 1",
+      "SELECT * FROM registration_email_verification WHERE email = $1 LIMIT 1",
       [email]
     );
+
+    const token = req.body.token
+    const decode = jwt.verify(token,process.env.SECRET_KEY);
+    const step = verificationResult.rows[0].step;
+    const expire = verificationResult.rows[0].entire_expire;
+    if( expire  && expire < new Date()){
+      return res.json({success:false,error:" time out"})
+    }
+
+    if(step !='4' && step!='5'){
+      return res.json({success:false,message:"you are not in correct step"});
+    }
+    const token1 = verificationResult.rows[0].token;
+
+    if(token!=token1){
+      return res.json({success:false,message:"incorrect token"});
+
+    }
+
+    const sequence = verificationResult.rows[0].sequence;
+    if(decode.sequence != sequence){
+
+      return res.json({success:false,message:"incorrect  sequence "});
+
+    }
+    
     const verificationData = verificationResult.rows[0];
 
     if (!verificationData || !verificationData.verified) {
@@ -83,7 +110,8 @@ async function registration(req, res) {
       room_number,
       profile_photo,
     ]);
-
+  
+    await pool.query(`DELETE FROM registration_email_verification WHERE email = $1`,[email])
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
