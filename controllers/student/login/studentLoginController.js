@@ -40,11 +40,11 @@ export async function studentLoginController(req, res) {
       process.env.SECRET_KEY || "mysecret",
       { expiresIn: process.env.REFRESH_TOKEN_LIFE }
     );
-
+        
     // Save refresh token
     await pool.query(
       `INSERT INTO refreshtokens (user_id, tokens, expires_at)
-       VALUES ($1, $2, NOW() + interval '7 days')
+       VALUES ($1, $2, NOW() + interval '${process.env.REFRESH_TOKEN_LIFE[0]} days')
        ON CONFLICT (user_id)
        DO UPDATE SET tokens = EXCLUDED.tokens, expires_at = EXCLUDED.expires_at`,
       [user.id, refreshToken]
