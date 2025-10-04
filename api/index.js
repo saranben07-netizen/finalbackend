@@ -61,6 +61,7 @@ import deletedepartmentrouter from "../routers/admin/department/deletedepartment
 import fetchNotificationForStudentsrouter from "../routers/student/notification/fetchNotificationForStudentsrouter.js";
 import dismissannouncementforstudentrouter from "../routers/student/notification/dismissnotification.js";
 import deleteannouncementrouter from "../routers/admin/announcement/deleteannouncementrouter.js";
+import logoutrouter from "../routers/admin/logout/logout.js";
 
 
 
@@ -105,6 +106,7 @@ api.use(fetchNotificationForStudentsrouter);
 api.use(editannouncementforadminrouter);
 api.use(dismissannouncementforstudentrouter);
 api.use(deleteannouncementrouter);
+api.use(logoutrouter);
 
 
 
