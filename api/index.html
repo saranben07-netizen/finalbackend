@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hostel Management + Google Drive Integration</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+  </head>
+
+  <body>
+    <h1>Hostel Management + Google Drive Integration</h1>
+
+    <!-- 1️⃣ Login button -->
+    <button onclick="window.location.href='http://localhost:3000/auth/google'">
+      Login with Google
+    </button>
+
+    <!-- 2️⃣ Picker button -->
+    <button onclick="openDrivePicker()">Open Google Drive Picker</button>
+
+    <script>
+      // Helper: Read cookie value
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      }
+
+      function openDrivePicker() {
+        const accessToken = getCookie("driveAccessToken");
+
+        if (!accessToken) {
+          alert("You must log in with Google first!");
+          return;
+        }
+
+        // Load Picker library
+        gapi.load("picker", () => createPicker(accessToken));
+      }
+
+      function createPicker(accessToken) {
+        const view = new google.picker.DocsView()
+          .setIncludeFolders(true)
+          .setSelectFolderEnabled(true);
+
+        const picker = new google.picker.PickerBuilder()
+          .addView(view)
+          .setOAuthToken(accessToken)
+          .setDeveloperKey("YOUR_API_KEY") // Replace with your Google Cloud API Key
+          .setCallback(pickerCallback)
+          .build();
+
+        picker.setVisible(true);
+      }
+
+      function pickerCallback(data) {
+        if (data.action === google.picker.Action.PICKED) {
+          const file = data.docs[0];
+          alert(`You selected: ${file.name} (${file.id})`);
+          console.log("Selected file:", file);
+        }
+      }
+    </script>
+  </body>
+</html>

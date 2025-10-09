@@ -11,7 +11,7 @@ async function resolvecomplaints(req, res) {
 
     const query = `
       UPDATE complaints
-      SET resolved = TRUE,
+      SET 
           status = 'resolved',
           resolved_at = NOW(),
           updated_at = NOW()

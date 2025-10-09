@@ -2,10 +2,13 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+
+
 dotenv.config();
 
 // Create express app
 const api = express();
+
 
 api.use(express.json({ limit: "10mb" })); 
 api.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -21,6 +24,13 @@ api.use(
     credentials: true,
   })
 );
+
+
+
+
+
+
+// 2️⃣ Callback route after Google login
 
 
 // ✅ Import rout
