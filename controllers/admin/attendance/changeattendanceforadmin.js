@@ -3,6 +3,9 @@ import pool from "../../../database/database.js";
 async function changeattendancebyadmin(req, res) {
   try {
     const { attendance_id, update ,token,...data} = req.body;
+    // normalize status
+const status = req.body.update.trim().toLowerCase(); // or .toUpperCase() depending on your DB constraint
+
 
     // ✅ Validate input
     if (!update) {
