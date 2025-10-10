@@ -2,12 +2,16 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import sanitizeInput from "../controllers/sanitizeInput.js";
+import compression from "compression";
+
 
 
 dotenv.config();
 
 // Create express app
 const api = express();
+api.use(sanitizeInput)
 
 
 api.use(express.json({ limit: "10mb" })); 
@@ -32,7 +36,7 @@ api.use(
 
 // 2️⃣ Callback route after Google login
 
-
+api.use(compression());
 // ✅ Import rout
 import studentsupdaterouter from "../routers/admin/students/studentsupdaterouter.js"
 import emailpushrouter from "../routers/account_creation/emailpushrouter.js";
@@ -72,6 +76,7 @@ import fetchNotificationForStudentsrouter from "../routers/student/notification/
 import dismissannouncementforstudentrouter from "../routers/student/notification/dismissnotification.js";
 import deleteannouncementrouter from "../routers/admin/announcement/deleteannouncementrouter.js";
 import logoutrouter from "../routers/admin/logout/logout.js";
+
 
 
 
