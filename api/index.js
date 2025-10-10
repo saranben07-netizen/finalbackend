@@ -125,5 +125,4 @@ api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-
 export default api
