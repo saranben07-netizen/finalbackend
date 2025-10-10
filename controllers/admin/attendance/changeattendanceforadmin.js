@@ -23,13 +23,13 @@ const status = req.body.update.trim().toLowerCase(); // or .toUpperCase() depend
       ON CONFLICT (student_id, date) DO NOTHING
       RETURNING *;
     `;
-    const result = pool.query(query,[student_id,update])
+    const result = pool.query(query,[student_id,status])
     return res.json({success:true,token})
     }
 
     // ✅ Run update query
     const query = "UPDATE attendance SET status = $1 WHERE id = $2";
-    const result = await pool.query(query, [update, attendance_id]);
+    const result = await pool.query(query, [status, attendance_id]);
 
 
     // ✅ Check if record exists
