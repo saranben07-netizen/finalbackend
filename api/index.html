@@ -1,64 +1,77 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Hostel Management + Google Drive Integration</title>
-    <script src="https://apis.google.com/js/api.js"></script>
-  </head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashfree Sandbox UPI/GPay</title>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background-color: #f0f0f0;
+        }
+        input, button {
+            padding: 12px 24px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h2>Cashfree UPI / GPay Sandbox Test</h2>
+    <p>Enter an Order ID and click Pay to open the UPI / GPay test payment page:</p>
 
-  <body>
-    <h1>Hostel Management + Google Drive Integration</h1>
-
-    <!-- 1️⃣ Login button -->
-    <button onclick="window.location.href='http://localhost:3000/auth/google'">
-      Login with Google
-    </button>
-
-    <!-- 2️⃣ Picker button -->
-    <button onclick="openDrivePicker()">Open Google Drive Picker</button>
+    <input type="text" id="orderIdInput" placeholder="Enter Order ID" />
+    <button id="payBtn">Pay ₹1 (Test)</button>
 
     <script>
-      // Helper: Read cookie value
-      function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(";").shift();
-        return null;
-      }
+        const cashfree = Cashfree({ mode: "sandbox" });
 
-      function openDrivePicker() {
-        const accessToken = getCookie("driveAccessToken");
+        document.getElementById("payBtn").addEventListener("click", async () => {
+            try {
+                const orderId = document.getElementById("orderIdInput").value.trim();
+                if (!orderId) {
+                    alert("Please enter an Order ID");
+                    return;
+                }
 
-        if (!accessToken) {
-          alert("You must log in with Google first!");
-          return;
-        }
+                // Call backend to create the order
+                const res = await fetch("http://localhost:5000/create-order", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: orderId }) // sending manual order id
+                });
 
-        // Load Picker library
-        gapi.load("picker", () => createPicker(accessToken));
-      }
+                const data = await res.json();
 
-      function createPicker(accessToken) {
-        const view = new google.picker.DocsView()
-          .setIncludeFolders(true)
-          .setSelectFolderEnabled(true);
+                if (!data.payment_session_id) {
+                    alert("Failed to get payment session ID from backend.");
+                    console.error("Backend response:", data);
+                    return;
+                }
 
-        const picker = new google.picker.PickerBuilder()
-          .addView(view)
-          .setOAuthToken(accessToken)
-          .setDeveloperKey("YOUR_API_KEY") // Replace with your Google Cloud API Key
-          .setCallback(pickerCallback)
-          .build();
+                // Open Cashfree Checkout
+                cashfree.checkout({
+                    paymentSessionId: data.payment_session_id,
+                    redirectTarget: "_self"
+                });
 
-        picker.setVisible(true);
-      }
-
-      function pickerCallback(data) {
-        if (data.action === google.picker.Action.PICKED) {
-          const file = data.docs[0];
-          alert(`You selected: ${file.name} (${file.id})`);
-          console.log("Selected file:", file);
-        }
-      }
+            } catch (err) {
+                console.error("Error initiating payment:", err);
+                alert("Error initiating payment. Check console.");
+            }
+        });
     </script>
-  </body>
+</body>
 </html>

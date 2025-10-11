@@ -3,8 +3,23 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import sanitizeInput from "../controllers/sanitizeInput.js";
-import compression from "compression";
 
+import compression from "compression";
+import crypto from "crypto"
+import { Cashfree } from "cashfree-pg";
+
+
+const cashfreeClient = new Cashfree({
+  clientId: process.env.CLIENT_ID || "TEST108360771478c4665f846cfe949877063801",
+  clientSecret: process.env.CLIENT_SECRET || "cfsk_ma_test_b560921740a233497ed2b83bf3ce4599_113f10f2",
+  env: "sandbox", // sandbox or production
+});
+function generateOrderId() {
+  const uniqueId = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.createHash("sha256");
+  hash.update(uniqueId);
+  return hash.digest("hex").substr(0, 12);
+}
 
 
 dotenv.config();
@@ -76,6 +91,7 @@ import fetchNotificationForStudentsrouter from "../routers/student/notification/
 import dismissannouncementforstudentrouter from "../routers/student/notification/dismissnotification.js";
 import deleteannouncementrouter from "../routers/admin/announcement/deleteannouncementrouter.js";
 import logoutrouter from "../routers/admin/logout/logout.js";
+import router from "./new.js";
 
 
 
@@ -122,6 +138,48 @@ api.use(editannouncementforadminrouter);
 api.use(dismissannouncementforstudentrouter);
 api.use(deleteannouncementrouter);
 api.use(logoutrouter);
+api.use("/pay",router)
+
+
+api.post("/create-order", async (req, res) => {
+  try {
+    const { student_id, student_name, student_email, student_phone, amount } = req.body;
+    const orderId = generateOrderId();
+
+    const request = {
+      order_amount: amount,
+      order_currency: "INR",
+      order_id: orderId,
+      customer_details: {
+        customer_id: student_id,
+        customer_name: student_name,
+        customer_email: student_email,
+        customer_phone: student_phone,
+      },
+    };
+
+    const response = await Cashfree.PGCreateOrder("2023-08-01", request);
+    res.json(response.data);
+  } catch (error) {
+    console.error(error.response?.data || error);
+    res.status(500).json({ message: "Order creation failed" });
+  }
+});
+
+// Verify payment
+api.post("/verify-payment", async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const response = await Cashfree.PGOrderFetchPayments("2023-08-01", orderId);
+    const payments = response.data.payments || [];
+    const status = payments.some(p => p.status === "SUCCESS");
+    res.json({ success: status, details: payments });
+  } catch (error) {
+    console.error(error.response?.data || error);
+    res.status(500).json({ message: "Payment verification failed" });
+  }
+});
+
 
 
 
@@ -130,4 +188,4 @@ api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export default api
+export  default api
