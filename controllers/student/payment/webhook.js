@@ -1,21 +1,41 @@
 import pool from "../../../database/database.js";
+import express from "express";
+import Cashfree from "cashfree-sdk";
 
-// Webhook controller (without signature verification)
+// Your client secret from Cashfree dashboard
+const clientSecret = process.env.CF_PAYOUT_SECRET;
+
+// Webhook controller with signature verification
 async function paymentWebhook(req, res) {
     try {
-        // Log the incoming body
+        // Convert the raw body to JSON string for verification
+        const webhookPostDataJson = JSON.stringify(req.body);
+
+        // Cashfree sends the signature in a header (usually 'x-webhook-signature')
+        const signature = req.headers['x-webhook-signature'];
+        if (!signature) {
+            console.error("Signature header missing");
+            return res.status(400).json({ message: "Missing signature" });
+        }
+
+        // Verify the webhook signature
+        const isValid = Cashfree.Payouts.VerifySignature(webhookPostDataJson, signature, clientSecret);
+
+        if (!isValid) {
+            console.error("Invalid webhook signature!");
+            return res.status(400).json({ message: "Invalid signature" });
+        }
+
+        console.log("✅ Webhook verified successfully!");
         console.log("Webhook payload:", req.body);
 
-        const event = req.body;
-        console.log(req)
-
         // Extract necessary fields safely
-        const { order_id, order_status, payment_id, amount, currency } = event;
+        const { order_id, order_status, payment_id, amount, currency } = req.body;
 
         console.log("Order ID:", order_id);
         console.log("Order Status:", order_status);
 
-        // Optionally update your database
+        // Update database if needed
         /*
         await pool.query(
             "UPDATE orders SET status=$1, payment_id=$2, amount=$3, currency=$4 WHERE order_id=$5",
