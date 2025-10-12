@@ -30,30 +30,34 @@
 </head>
 <body>
     <h2>Cashfree UPI / GPay Sandbox Test</h2>
-    <p>Enter an Order ID and click Pay to open the UPI / GPay test payment page:</p>
+    <p>Enter Student ID and Year-Month to create the order:</p>
 
-    <input type="text" id="orderIdInput" placeholder="Enter Order ID" />
-    <button id="payBtn">Pay ₹1 (Test)</button>
+    <input type="text" id="studentIdInput" placeholder="Enter Student ID" />
+    <input type="text" id="yearMonthInput" placeholder="Enter Year-Month (YYYY-MM)" />
+    <button id="payBtn">Pay (Test)</button>
 
     <script>
         const cashfree = Cashfree({ mode: "sandbox" });
 
         document.getElementById("payBtn").addEventListener("click", async () => {
             try {
-                const orderId = document.getElementById("orderIdInput").value.trim();
-                if (!orderId) {
-                    alert("Please enter an Order ID");
+                const studentId = document.getElementById("studentIdInput").value.trim();
+                const yearMonth = document.getElementById("yearMonthInput").value.trim();
+
+                if (!studentId || !yearMonth) {
+                    alert("Please enter both Student ID and Year-Month");
                     return;
                 }
 
                 // Call backend to create the order
-                const res = await fetch("http://localhost:5000/create-order", {
+                const res = await fetch("http://localhost:3000/create-order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: orderId }) // sending manual order id
+                    body: JSON.stringify({ student_id: studentId, year_month: yearMonth })
                 });
 
-                const data = await res.json();
+                let data = await res.json();
+                data = data.response
 
                 if (!data.payment_session_id) {
                     alert("Failed to get payment session ID from backend.");
