@@ -1,5 +1,6 @@
 import pool from "../../../database/database.js";
 import { Cashfree, CFEnvironment } from "cashfree-pg";
+
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX,
   "TEST108360771478c4665f846cfe949877063801",
@@ -19,7 +20,7 @@ async function createorder(req, res) {
         const orderId = orderid(req);
         const { student_id, year_month } = req.body;
 
-        // Await the query
+        // Fetch bill amount
         const data = await pool.query(
             `SELECT amount FROM mess_bill_for_students WHERE student_id = $1 AND year_month = $2`,
             [student_id, year_month]
@@ -31,6 +32,7 @@ async function createorder(req, res) {
 
         const amount = data.rows[0].amount;
 
+        // Cashfree order request with order_meta
         const request = {
             order_id: orderId,
             order_amount: amount || "1",
@@ -42,17 +44,17 @@ async function createorder(req, res) {
                 customer_phone: "9999999999",
             },
             order_note: "Test UPI payment",
+            order_meta: {
+               // redirect user after payment
+                notify_url: "https://finalbackend-mauve.vercel.app/webhook/"           // webhook callback URL
+            }
         };
-         const response = await cashfree.PGCreateOrder(request);
+
+        const response = await cashfree.PGCreateOrder(request);
 
         console.log(request);
 
-        // Optional: If you want to actually create the order in Cashfree
-        // const cashfree = new Cashfree(CFEnvironment.SANDBOX, YOUR_CLIENT_ID, YOUR_CLIENT_SECRET);
-        // const response = await cashfree.PGCreateOrder(request);
-        // res.json(response.data);
-
-        res.json({ message: "Order request created", response :response.data });
+        res.json({ message: "Order request created", response: response.data });
 
     } catch (err) {
         console.error(err);
