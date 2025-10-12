@@ -7,6 +7,7 @@ async function paymentWebhook(req, res) {
         console.log("Webhook payload:", req.body);
 
         const event = req.body;
+        console.log(req)
 
         // Extract necessary fields safely
         const { order_id, order_status, payment_id, amount, currency } = event;
