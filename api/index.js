@@ -92,6 +92,8 @@ import dismissannouncementforstudentrouter from "../routers/student/notification
 import deleteannouncementrouter from "../routers/admin/announcement/deleteannouncementrouter.js";
 import logoutrouter from "../routers/admin/logout/logout.js";
 import router from "./new.js";
+import createorderrouter from "../routers/student/payment/createorder.js";
+import webhook from "../routers/student/payment/webhook.js"
 
 
 
@@ -138,10 +140,12 @@ api.use(editannouncementforadminrouter);
 api.use(dismissannouncementforstudentrouter);
 api.use(deleteannouncementrouter);
 api.use(logoutrouter);
+api.use(createorderrouter)
 api.use("/pay",router)
+api.use(webhook);
 
 
-api.post("/create-order", async (req, res) => {
+api.post("/create-order1", async (req, res) => {
   try {
     const { student_id, student_name, student_email, student_phone, amount } = req.body;
     const orderId = generateOrderId();
@@ -188,4 +192,4 @@ api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
 
-export  default api
+export default api
