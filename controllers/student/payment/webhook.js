@@ -1,6 +1,6 @@
 import bodyParser from "body-parser";
 import pool from "../../../database/database.js";
-import { Cashfree } from "cashfree-pg";
+import { Cashfree, CFEnvironment  } from "cashfree-pg";
 
 // Initialize Cashfree with proper configuration
 const cashfree = new Cashfree(
