@@ -35,7 +35,7 @@ async function createorder(req, res) {
 
         // Cashfree order request with order_meta
         const request = {
-            order_id: orderId,
+           
             order_amount: amount || "1",
             order_currency: "INR",
             customer_details: {
@@ -47,7 +47,7 @@ async function createorder(req, res) {
             order_note: "Test UPI payment",
             order_meta: {
                // redirect user after payment
-                notify_url: "https://finalbackend-mauve.vercel.app/webhook/"           // webhook callback URL
+                notify_url: "https://finalbackend1.vercel.app/webhook/"           // webhook callback URL
             },
               order_tags: {
         student_id: student_id,
