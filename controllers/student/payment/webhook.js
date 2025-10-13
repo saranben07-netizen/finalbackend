@@ -8,8 +8,8 @@ const router = express.Router();
 // Initialize Cashfree (PG)
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX,
-  process.env.CF_APP_ID,      // your Cashfree App ID
-  process.env.CF_SECRET_KEY   // your Cashfree Secret Key
+ "TEST108360771478c4665f846cfe949877063801",
+  "cfsk_ma_test_b560921740a233497ed2b83bf3ce4599_113f10f2"   // your Cashfree Secret Key
 );
 
 // Webhook route
@@ -48,12 +48,11 @@ router.post(
       const { order_id, order_status, payment_id, order_amount, order_currency } = req.body;
 
       // ✅ Update order details in DB
-     /* await pool.query(
+      await pool.query(
         `UPDATE orders 
-         SET status=$1, payment_id=$2, amount=$3, currency=$4 
-         WHERE order_id=$5`,
+         SET success = $1,order_id=$2 `,
         [order_status, payment_id, order_amount, order_currency, order_id]
-      );*/
+      )
 
       res.status(200).json({ message: "Webhook processed successfully" });
     } catch (err) {
