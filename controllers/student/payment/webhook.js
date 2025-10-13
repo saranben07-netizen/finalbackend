@@ -11,25 +11,11 @@ const cashfree = new Cashfree(
 
 const paymentWebhook = [
   // Body parser middleware
-  bodyParser.json({
-    verify: (req, res, buf) => {
-      req.rawBody = buf.toString();
-    },
-  }),
+  bodyParser.json(),
+  
   // Webhook handler
   async (req, res) => {
     try {
-      const signature = req.headers["x-webhook-signature"];
-      if (!signature) {
-        return res.status(400).json({ message: "Missing signature" });
-      }
-
-      // Verify webhook signature
-      const verified = cashfree.webhook.verifySignature(req.rawBody, signature);
-      if (!verified) {
-        return res.status(400).json({ message: "Invalid signature" });
-      }
-
       const { order_id, order_status, payment_id } = req.body;
 
       // Get bill by order_id
