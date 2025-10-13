@@ -22,7 +22,7 @@ async function createorder(req, res) {
 
         // Fetch bill amount
         const data = await pool.query(
-            `SELECT amount FROM mess_bill_for_students WHERE student_id = $1 AND year_month = $2`,
+            `SELECT id ,amount FROM mess_bill_for_students WHERE student_id = $1 AND year_month = $2`,
             [student_id, year_month]
         );
 
@@ -31,6 +31,7 @@ async function createorder(req, res) {
         }
 
         const amount = data.rows[0].amount;
+        const id = data.rows[0].id;
 
         // Cashfree order request with order_meta
         const request = {
@@ -47,7 +48,11 @@ async function createorder(req, res) {
             order_meta: {
                // redirect user after payment
                 notify_url: "https://finalbackend-mauve.vercel.app/webhook/"           // webhook callback URL
-            }
+            },
+              order_tags: {
+        student_id: student_id,
+        mess_bill_id:id
+      },
         };
 
         const response = await cashfree.PGCreateOrder(request);
