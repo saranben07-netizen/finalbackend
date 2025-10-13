@@ -27,6 +27,9 @@ dotenv.config();
 // Create express app
 const api = express();
 api.use(sanitizeInput)
+import webhook from "../routers/student/payment/webhook.js";
+api.use(webhook);
+
 
 
 api.use(express.json({ limit: "10mb" })); 
@@ -93,7 +96,7 @@ import deleteannouncementrouter from "../routers/admin/announcement/deleteannoun
 import logoutrouter from "../routers/admin/logout/logout.js";
 import router from "./new.js";
 import createorderrouter from "../routers/student/payment/createorder.js";
-import webhook from "../routers/student/payment/webhook.js"
+
 
 
 
@@ -142,7 +145,7 @@ api.use(deleteannouncementrouter);
 api.use(logoutrouter);
 api.use(createorderrouter)
 api.use("/pay",router)
-api.use(webhook);
+
 
 
 api.post("/create-order1", async (req, res) => {
