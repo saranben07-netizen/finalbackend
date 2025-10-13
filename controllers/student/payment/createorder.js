@@ -37,25 +37,26 @@ async function createorder(req, res) {
     const orderId = generateOrderId(student_id, year_month);
 
     // 3️⃣ Prepare Cashfree order request
-    const request = {
-      order_amount: amount,
-      order_currency: "INR",
-      order_id: orderId,
-      customer_details: {
-        customer_id: student_id.toString(),
-        customer_name: student_name,
-        customer_email: student_email,
-        customer_phone: student_phone,
-      },
-      order_note: `Mess bill for ${year_month}`,
-      order_meta: {
-        notify_url: "https://finalbackend1.vercel.app/webhook" // your webhook endpoint
-      },
-      order_tags: {
-        student_id: student_id,
-        mess_bill_id: billId
-      }
-    };
+ const request = {
+  order_amount: amount || "1",
+  order_currency: "INR",
+  order_id: orderId, // generated order_id
+  customer_details: {
+    customer_id: student_id,
+    customer_name: student_name || "Student Name",
+    customer_email: student_email || "example@gmail.com",
+    customer_phone: student_phone || "9999999999", // <--- REQUIRED
+  },
+  order_note: `Mess bill for ${year_month}`,
+  order_meta: {
+    notify_url: "https://finalbackend1.vercel.app/webhook/"
+  },
+  order_tags: {
+    student_id: student_id,
+    mess_bill_id: billId // <-- FIXED
+  },
+};
+
 
     // 4️⃣ Create order in Cashfree
     const response = await cashfree.PGCreateOrder(request);
@@ -66,7 +67,7 @@ await pool.query(
   `INSERT INTO mess_payment_logs
    (bill_id, order_id, event_type, raw_payload)
    VALUES ($1, $2, $3, $4)`,
-  [id, orderId, "CREATED", JSON.stringify(request)]
+  [billId, orderId, "CREATED", JSON.stringify(request)] // <-- FIXED
 );
 
 
@@ -78,7 +79,7 @@ await pool.query(
       [orderId, billId]
     );
 
-    console.log("✅ Cashfree order request:", request);
+    console.log("✅ Cashfree order request:", response);
 
     res.json({ message: "Order created successfully", cashfree_response: response.data });
   } catch (err) {

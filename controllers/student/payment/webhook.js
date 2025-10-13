@@ -1,21 +1,22 @@
-import express from "express";
 import bodyParser from "body-parser";
 import pool from "../../../database/database.js";
-import { Cashfree, CFEnvironment } from "cashfree-pg";
+import { Cashfree } from "cashfree-pg";
 
-const router = express.Router();
-
+// Initialize Cashfree with proper configuration
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX,
-  process.env.CF_APP_ID,
-  process.env.CF_SECRET_KEY
+  "TEST108360771478c4665f846cfe949877063801",
+  "cfsk_ma_test_b560921740a233497ed2b83bf3ce4599_113f10f2"
 );
 
-router.post(
-  "/",
+const paymentWebhook = [
+  // Body parser middleware
   bodyParser.json({
-    verify: (req, res, buf) => { req.rawBody = buf.toString(); }
+    verify: (req, res, buf) => { 
+      req.rawBody = buf.toString(); 
+    }
   }),
+  // Webhook handler function
   async (req, res) => {
     try {
       const signature = req.headers["x-webhook-signature"];
@@ -25,7 +26,8 @@ router.post(
         return res.status(400).json({ message: "Missing signature or timestamp" });
       }
 
-      const verified = cashfree.PGVerifyWebhookSignature(signature, req.rawBody, timestamp);
+      // Verify webhook signature
+      const verified = cashfree.verifyWebhookSignature(signature, req.rawBody, timestamp);
       if (!verified) {
         return res.status(400).json({ message: "Invalid signature" });
       }
@@ -60,10 +62,10 @@ router.post(
 
       res.status(200).json({ message: "Webhook processed successfully" });
     } catch (err) {
-      console.error(err);
+      console.error("Webhook error:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   }
-);
+];
 
-export default router;
+export default paymentWebhook;
