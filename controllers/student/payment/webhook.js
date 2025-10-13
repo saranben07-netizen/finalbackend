@@ -1,8 +1,8 @@
 import bodyParser from "body-parser";
 import pool from "../../../database/database.js";
-import { Cashfree, CFEnvironment  } from "cashfree-pg";
+import { Cashfree, CFEnvironment } from "cashfree-pg";
 
-// Initialize Cashfree with proper configuration
+// Initialize Cashfree
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX,
   "TEST108360771478c4665f846cfe949877063801",
@@ -12,22 +12,20 @@ const cashfree = new Cashfree(
 const paymentWebhook = [
   // Body parser middleware
   bodyParser.json({
-    verify: (req, res, buf) => { 
-      req.rawBody = buf.toString(); 
-    }
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
+    },
   }),
-  // Webhook handler function
+  // Webhook handler
   async (req, res) => {
     try {
       const signature = req.headers["x-webhook-signature"];
-      const timestamp = req.headers["x-webhook-timestamp"];
-
-      if (!signature || !timestamp) {
-        return res.status(400).json({ message: "Missing signature or timestamp" });
+      if (!signature) {
+        return res.status(400).json({ message: "Missing signature" });
       }
 
       // Verify webhook signature
-      const verified = cashfree.verifyWebhookSignature(signature, req.rawBody, timestamp);
+      const verified = cashfree.webhook.verifySignature(req.rawBody, signature);
       if (!verified) {
         return res.status(400).json({ message: "Invalid signature" });
       }
@@ -65,7 +63,7 @@ const paymentWebhook = [
       console.error("Webhook error:", err);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 ];
 
 export default paymentWebhook;
