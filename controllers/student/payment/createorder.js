@@ -1,70 +1,90 @@
 import pool from "../../../database/database.js";
 import { Cashfree, CFEnvironment } from "cashfree-pg";
 
+// Cashfree config
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX,
   "TEST108360771478c4665f846cfe949877063801",
   "cfsk_ma_test_b560921740a233497ed2b83bf3ce4599_113f10f2"
 );
 
-// Generate order_id
-function orderid(req) {
-    const student_id = req.body.student_id;
-    const year_month = req.body.year_month;
-    const order_id = student_id + year_month;
-    return order_id;
+// Generate unique order_id (student_id + year_month + timestamp)
+function generateOrderId(student_id, year_month) {
+  const timestamp = Date.now();
+  return `${student_id}_${year_month}_${timestamp}`;
 }
 
+// Create order route
 async function createorder(req, res) {
-    try {
-        const orderId = orderid(req);
-        const { student_id, year_month } = req.body;
+  try {
+    const { student_id, year_month, student_name, student_email, student_phone } = req.body;
 
-        // Fetch bill amount
-        const data = await pool.query(
-            `SELECT id ,amount FROM mess_bill_for_students WHERE student_id = $1 AND year_month = $2`,
-            [student_id, year_month]
-        );
+    // 1️⃣ Fetch bill for student/month
+    const billQuery = await pool.query(
+      `SELECT id, amount FROM mess_bill_for_students 
+       WHERE student_id = $1 AND year_month = $2`,
+      [student_id, year_month]
+    );
 
-        if (data.rows.length === 0) {
-            return res.status(404).json({ error: "Bill not found for this student and month" });
-        }
-
-        const amount = data.rows[0].amount;
-        const id = data.rows[0].id;
-
-        // Cashfree order request with order_meta
-        const request = {
-           
-            order_amount: amount || "1",
-            order_currency: "INR",
-            customer_details: {
-                customer_id: student_id,
-                customer_name: "Saran",
-                customer_email: "example@gmail.com",
-                customer_phone: "9999999999",
-            },
-            order_note: "Test UPI payment",
-            order_meta: {
-               // redirect user after payment
-                notify_url: "https://finalbackend1.vercel.app/webhook/"           // webhook callback URL
-            },
-              order_tags: {
-        student_id: student_id,
-        mess_bill_id:id
-      },
-        };
-
-        const response = await cashfree.PGCreateOrder(request);
-
-        console.log(request);
-
-        res.json({ message: "Order request created", response: response.data });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal server error" });
+    if (billQuery.rows.length === 0) {
+      return res.status(404).json({ error: "Bill not found for this student and month" });
     }
+
+    const billId = billQuery.rows[0].id;
+    const amount = billQuery.rows[0].amount || 1; // fallback
+
+    // 2️⃣ Generate unique order_id
+    const orderId = generateOrderId(student_id, year_month);
+
+    // 3️⃣ Prepare Cashfree order request
+    const request = {
+      order_amount: amount,
+      order_currency: "INR",
+      order_id: orderId,
+      customer_details: {
+        customer_id: student_id.toString(),
+        customer_name: student_name,
+        customer_email: student_email,
+        customer_phone: student_phone,
+      },
+      order_note: `Mess bill for ${year_month}`,
+      order_meta: {
+        notify_url: "https://finalbackend1.vercel.app/webhook" // your webhook endpoint
+      },
+      order_tags: {
+        student_id: student_id,
+        mess_bill_id: billId
+      }
+    };
+
+    // 4️⃣ Create order in Cashfree
+    const response = await cashfree.PGCreateOrder(request);
+
+    // 5️⃣ Insert into payment logs
+   // After PGCreateOrder request
+await pool.query(
+  `INSERT INTO mess_payment_logs
+   (bill_id, order_id, event_type, raw_payload)
+   VALUES ($1, $2, $3, $4)`,
+  [id, orderId, "CREATED", JSON.stringify(request)]
+);
+
+
+    // 6️⃣ Update bill table with latest order
+    await pool.query(
+      `UPDATE mess_bill_for_students
+       SET latest_order_id = $1, status = 'PENDING', updated_at = NOW()
+       WHERE id = $2`,
+      [orderId, billId]
+    );
+
+    console.log("✅ Cashfree order request:", request);
+
+    res.json({ message: "Order created successfully", cashfree_response: response.data });
+  } catch (err) {
+    console.error("❌ Error creating order:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 }
 
 export default createorder;
