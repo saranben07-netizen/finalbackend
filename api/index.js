@@ -196,4 +196,4 @@ api.get("/", (req, res) => {
 });
 
 
-api.listen(3000)
+export  default api
