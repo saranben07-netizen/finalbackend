@@ -1,6 +1,7 @@
 import express from "express";
 import paymentWebhook from "../../../controllers/student/payment/webhook.js";
-import bodyParser from ""
+import bodyParser from "body-parser";
+
 
 const router = express.Router();
 
