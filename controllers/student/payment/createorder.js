@@ -61,7 +61,13 @@ async function createorder(req, res) {
 
   
     const response = await cashfree.PGCreateOrder(request);
-    await pool.query(`UPDATE mess_bill_for_students SET latest_order_id = $1 WHERE id = $1 `,[billId])
+    await pool.query(
+  `UPDATE mess_bill_for_students 
+   SET latest_order_id = $1 
+   WHERE id = $2`,
+  [response.data.cf_order_id, billId]
+);
+
 
    
 
