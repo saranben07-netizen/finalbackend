@@ -29,7 +29,7 @@ export default async function paymentWebhook(req, res) {
     const eventData = req.body;
     console.log(eventData)
     const orderId = eventData.order_id;              // custom order ID you generated
-    const cfOrderId = eventData.cf_order_id;         // Cashfree's internal order ID
+    const cfOrderId = eventData.data.payment_gateway_details.gateway_order_id;         // Cashfree's internal order ID
     const orderStatus = eventData.data.payment.payment_status;      // Example: "PAID", "FAILED", etc.
 
     // Decide your internal status
@@ -40,7 +40,7 @@ export default async function paymentWebhook(req, res) {
       `UPDATE mess_bill_for_students 
        SET status = $1, updated_at = NOW() 
        WHERE latest_order_id = $2`,
-      [orderStatus, orderId]
+      [orderStatus, cfOrderId]
     );
 
     console.log(`✅ Updated order (${orderId}) to status: ${orderStatus}`);
