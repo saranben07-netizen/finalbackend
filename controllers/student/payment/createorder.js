@@ -27,6 +27,7 @@ async function createorder(req, res) {
     );
 
     if (billQuery.rows.length === 0) {
+
       return res.status(404).json({ error: "Bill not found for this student and month" });
     }
 
@@ -53,31 +54,16 @@ async function createorder(req, res) {
   },
   order_tags: {
     student_id: student_id,
-    mess_bill_id: billId // <-- FIXED
+    mess_bill_id: billId
   },
 };
 
 
-    // 4️⃣ Create order in Cashfree
+  
     const response = await cashfree.PGCreateOrder(request);
+    await query(`UPDATE mess_bill_for_students SET latest_order_id = $1 WHERE id = $1 `,[billId])
 
-    // 5️⃣ Insert into payment logs
-   // After PGCreateOrder request
-await pool.query(
-  `INSERT INTO mess_payment_logs
-   (bill_id, order_id, event_type, raw_payload)
-   VALUES ($1, $2, $3, $4)`,
-  [billId, orderId, "CREATED", JSON.stringify(request)] // <-- FIXED
-);
-
-
-    // 6️⃣ Update bill table with latest order
-    await pool.query(
-      `UPDATE mess_bill_for_students
-       SET latest_order_id = $1, status = 'PENDING', updated_at = NOW()
-       WHERE id = $2`,
-      [orderId, billId]
-    );
+   
 
     console.log("✅ Cashfree order request:", response);
 
