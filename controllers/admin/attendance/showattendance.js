@@ -27,7 +27,7 @@ async function showattendance(req, res) {
       FROM students s
     `;
 
-    // 🧩 Build dynamic JOIN conditions
+    // 🧩 Build dynamic JOIN conditionsnnode 
     const joinConditions = ["a.student_id = s.id"];
     const values = [];
     let paramIndex = 1;
