@@ -2,7 +2,7 @@ import pool from "../../../database/database.js";
 
 async function changeattendancebyadmin(req, res) {
   try {
-    const { attendance_id, update ,token,...data} = req.body;
+    const { attendance_id, update ,token,date,...data} = req.body;
     // normalize status
  // or .toUpperCase() depending on your DB constraint
 
@@ -18,12 +18,12 @@ async function changeattendancebyadmin(req, res) {
     if(!attendance_id || attendance_id==""){
       const student_id = data.student_id;
        const query = `
-      INSERT INTO public.attendance (student_id, status)
-      VALUES ($1, $2)
+      INSERT INTO public.attendance (student_id, status,date)
+      VALUES ($1, $2,$3)
       ON CONFLICT (student_id, date) DO NOTHING
       RETURNING *;
     `;
-    const result = pool.query(query,[student_id,update])
+    const result = pool.query(query,[student_id,update,date])
     return res.json({success:true,token})
     }
 
