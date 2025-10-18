@@ -19,7 +19,7 @@ async function attendance(req, res) {
     const hostellng = process.env.HOSTEL_LNG ;
     
 
-    const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, 5000);
+    const isinHostel = isInHostel(studentlat, studentlng, hostellat, hostellng, process.env.RADIUS);
 
     if (!isinHostel) {
       return res.status(403).json({ success: false, error: "Student not inside hostel",token });

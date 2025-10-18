@@ -1,10 +1,19 @@
-import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
-function verifySignature(payload, signature, secret) {
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(JSON.stringify(payload));
-  const digest = hmac.digest('base64');
-  return digest === signature;
-}
+// Function to generate hash
+const generateHash = async (plainText) => {
+  try {
+    const saltRounds = 10; // Number of salt rounds (adjustable)
+    const hash = await bcrypt.hash(plainText, saltRounds);
+    return hash;
+  } catch (error) {
+    console.error("Error generating hash:", error);
+  }
+};
 
-verifySignature()
+// Example usage
+(async () => {
+  const password = "benmega";
+  const hashedPassword = await generateHash(password);
+  console.log("Hashed value:", hashedPassword);
+})();

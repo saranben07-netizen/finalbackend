@@ -96,8 +96,16 @@ import deleteannouncementrouter from "../routers/admin/announcement/deleteannoun
 import logoutrouter from "../routers/admin/logout/logout.js";
 import router from "./new.js";
 import createorderrouter from "../routers/student/payment/createorder.js";
+import messbillpush from "../routers/admin/messbill/messbillpush.js";
+import messbillshow from "../routers/admin/messbill/messbillshow.js";
+import insertstudentmessbill from "../routers/admin/messbill/insertstudentmessbill.js";
+import fetchstudentsmessbill from "../routers/admin/messbill/fetchstudentsmessbill.js";
+import messbillupdate from "../routers/admin/messbill/messbillupdate.js";
 
-
+import updatemessbill from "../routers/admin/messbill/updatestudentsmessbill.js";
+import updateshowmessbill from "../routers/admin/messbill/showtostudents.js";
+import updateshowstudentsbydeptyear from "../routers/admin/messbill/bulkstudentshow.js";
+import showMessBillsByIdRouter from "../routers/student/payment/billsfetch.js";
 
 
 
@@ -144,8 +152,16 @@ api.use(dismissannouncementforstudentrouter);
 api.use(deleteannouncementrouter);
 api.use(logoutrouter);
 api.use(createorderrouter)
+api.use(messbillpush)
 api.use("/pay",router)
-
+api.use(messbillshow)
+api.use(insertstudentmessbill)
+api.use(fetchstudentsmessbill)
+api.use(updatemessbill)
+api.use(messbillupdate)
+api.use(updateshowmessbill)
+api.use(updateshowstudentsbydeptyear)
+api.use(showMessBillsByIdRouter)
 
 
 api.post("/create-order1", async (req, res) => {
