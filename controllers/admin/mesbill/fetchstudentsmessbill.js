@@ -47,6 +47,7 @@ export const fetchMessBills = async (req, res) => {
         b.mess_fee_per_day,
         (b.mess_fee_per_day * m.number_of_days) AS total_amount,
         m.latest_order_id,
+        m.show_to_students,
         m.created_at,
         m.updated_at
       FROM public.mess_bill_for_students m
