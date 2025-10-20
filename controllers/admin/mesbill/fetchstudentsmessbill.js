@@ -13,7 +13,7 @@ export const fetchMessBills = async (req, res) => {
       });
     }
 
-    // 🧾 Query
+    // 🧾 Query without show_to_students column
     const query = `
       SELECT 
         s.id AS student_id,
@@ -32,7 +32,6 @@ export const fetchMessBills = async (req, res) => {
         mbfs.id AS mess_bill_id,
         mbfs.status AS payment_status,
        
-
         -- ✅ Calculated fields
         COALESCE(mbfs.number_of_days, myd.total_days) AS effective_number_of_days,
         COALESCE(mbfs.number_of_days, myd.total_days) * mbc.mess_fee_per_day AS total_amount
