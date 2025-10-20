@@ -80,35 +80,14 @@ export const createMonthlyCalculation = async (req, res) => {
       insertedYears.push(result.rows[0]);
     }
 
-    // 3️⃣ Insert mess bills for students (only for specified years)
-    const yearsInt = years_data.map(y => parseInt(y.year, 10));
-
-    const insertBillsQuery = `
-      INSERT INTO public.mess_bill_for_students
-        (student_id, monthly_year_data_id, number_of_days, monthly_base_cost_id)
-      SELECT 
-        s.id AS student_id,
-        m.id AS monthly_year_data_id,
-        COALESCE(m.total_days, 30) AS number_of_days,
-        b.id AS monthly_base_cost_id
-      FROM public.students s
-      JOIN public.monthly_year_data m
-        ON s.academic_year::int = m.year
-      JOIN public.monthly_base_costs b
-        ON m.monthly_base_id = b.id
-      WHERE b.month_year = $1
-        AND m.year = ANY($2::int[]);
-    `;
-
-    const billResult = await client.query(insertBillsQuery, [month_year, yearsInt]);
+    // ✅ Removed mess_bill_for_students insertion part
 
     await client.query('COMMIT');
 
     res.status(201).json({
-      message: `Monthly calculation and mess bills created successfully for ${month_year}`,
+      message: `Monthly calculation created successfully for ${month_year}`,
       base_id: baseId,
-      year_data_inserted: insertedYears,
-      bills_inserted_count: billResult.rowCount
+      year_data_inserted: insertedYears
     });
 
   } catch (error) {

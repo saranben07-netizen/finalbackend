@@ -4,71 +4,76 @@ export const fetchMessBills = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { year_month, department, registration_number, academic_year } = req.body;
+    const { month_year, department, academic_year } = req.body;
 
-    if (!year_month) {
-      return res.status(400).json({ error: "year_month is required" });
+    // 🚫 Mandatory fields check
+    if (!month_year || !department || !academic_year) {
+      return res.status(400).json({
+        error: "month_year, department, and academic_year are required fields."
+      });
     }
 
-    // 1️⃣ Build dynamic filters
-    const filters = ['b.month_year = $1'];
-    const values = [year_month];
-    let idx = 2;
-
-    if (department) {
-      filters.push(`s.department = $${idx}`);
-      values.push(department);
-      idx++;
-    }
-    if (registration_number) {
-      filters.push(`s.registration_number = $${idx}`);
-      values.push(registration_number);
-      idx++;
-    }
-    if (academic_year) {
-      filters.push(`s.academic_year = $${idx}`);
-      values.push(academic_year);
-      idx++;
-    }
-
-    // 2️⃣ Query with JOINs
+    // 🧾 Query
     const query = `
       SELECT 
-        m.id AS mess_bill_id,
-        m.monthly_year_data_id,
         s.id AS student_id,
-        s.name,
-        s.department,
+        s.name AS student_name,
         s.registration_number,
+        s.department,
         s.academic_year,
-        m.number_of_days,
-        m.status,
-        b.month_year,
-        b.mess_fee_per_day,
-        (b.mess_fee_per_day * m.number_of_days) AS total_amount,
-        m.latest_order_id,
-        m.show_to_students,
-        m.created_at,
-        m.updated_at
-      FROM public.mess_bill_for_students m
-      JOIN public.students s
-        ON m.student_id = s.id
-      JOIN public.monthly_base_costs b
-        ON m.monthly_base_cost_id = b.id
-      WHERE ${filters.join(' AND ')}
-      ORDER BY s.department, s.academic_year, s.name;
+
+        mbc.id AS monthly_base_cost_id,
+        mbc.month_year AS mess_bill_month,
+        mbc.mess_fee_per_day,
+
+        myd.id AS monthly_year_data_id,
+        myd.total_days AS total_days_in_month,
+
+        mbfs.id AS mess_bill_id,
+        mbfs.status AS payment_status,
+       
+
+        -- ✅ Calculated fields
+        COALESCE(mbfs.number_of_days, myd.total_days) AS effective_number_of_days,
+        COALESCE(mbfs.number_of_days, myd.total_days) * mbc.mess_fee_per_day AS total_amount
+
+      FROM monthly_base_costs mbc
+      JOIN monthly_year_data myd 
+        ON myd.monthly_base_id = mbc.id
+      JOIN students s 
+        ON s.academic_year::integer = myd.year
+      LEFT JOIN mess_bill_for_students mbfs 
+        ON mbfs.monthly_year_data_id = myd.id
+        AND mbfs.student_id = s.id
+        AND mbfs.monthly_base_cost_id = mbc.id
+
+      WHERE mbc.month_year = $1
+        AND s.department = $2
+        AND s.academic_year = $3
+
+      ORDER BY s.registration_number;
     `;
+
+    const values = [month_year, department, academic_year];
 
     const result = await client.query(query, values);
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "No records found for the given filters.",
+        filters: { month_year, department, academic_year }
+      });
+    }
+
     res.status(200).json({
-      message: 'Mess bills fetched successfully',
-      count: result.rowCount,
+      message: "Mess bill data fetched successfully.",
+      filters: { month_year, department, academic_year },
+      count: result.rows.length,
       data: result.rows
     });
 
   } catch (error) {
-    console.error('Error fetching mess bills:', error);
+    console.error('Error in fetchMessBills:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   } finally {
     client.release();

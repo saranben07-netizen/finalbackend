@@ -11,10 +11,10 @@ export const updateMonthlyCalculation = async (req, res) => {
 
     // 1️⃣ Dynamically update monthly_base_costs
     const baseFields = [
-      'month_year','grocery_cost','vegetable_cost','gas_charges',
-      'total_milk_litres','milk_cost_per_litre','milk_charges_computed',
-      'other_costs','deductions_income','veg_extra_per_day','nonveg_extra_per_day',
-      'total_expenditure','expenditure_after_income','mess_fee_per_day'
+      'month_year', 'grocery_cost', 'vegetable_cost', 'gas_charges',
+      'total_milk_litres', 'milk_cost_per_litre', 'milk_charges_computed',
+      'other_costs', 'deductions_income', 'veg_extra_per_day', 'nonveg_extra_per_day',
+      'total_expenditure', 'expenditure_after_income', 'mess_fee_per_day'
     ];
 
     const setClauses = [];
@@ -39,6 +39,7 @@ export const updateMonthlyCalculation = async (req, res) => {
       values.push(base_id);
       const updatedBase = await client.query(updateQuery, values);
       if (!updatedBase.rows.length) throw new Error('Base record not found');
+
       fields.month_year = updatedBase.rows[0].month_year;
       fields.mess_fee_per_day = updatedBase.rows[0].mess_fee_per_day;
     } else {
@@ -62,46 +63,21 @@ export const updateMonthlyCalculation = async (req, res) => {
           VALUES ($1, $2, $3, $4)
           ON CONFLICT (monthly_base_id, year)
           DO UPDATE SET total_students = EXCLUDED.total_students,
-                        total_days = EXCLUDED.total_days
+                        total_days = EXCLUDED.total_days;
         `, [base_id, year, total_students, total_days]);
       }
     }
 
-    // 3️⃣ Regenerate mess bills
-    if (Array.isArray(years_data) && years_data.length > 0) {
-      const yearsStr = years_data.map(y => y.year.toString());
-
-      // Delete old bills for these academic years and this month
-      await client.query(`
-        DELETE FROM public.mess_bill_for_students
-        WHERE monthly_base_cost_id = $1
-          AND student_id IN (
-            SELECT id FROM public.students WHERE academic_year = ANY($2::text[])
-          )
-      `, [base_id, yearsStr]);
-
-      // Insert new bills using mess_fee_per_day and total_days
-      await client.query(`
-        INSERT INTO public.mess_bill_for_students
-          (student_id, status, monthly_year_data_id, number_of_days, monthly_base_cost_id)
-        SELECT
-          s.id AS student_id,
-          'PENDING' AS status,
-          m.id AS monthly_year_data_id,
-          COALESCE(m.total_days,30) AS number_of_days,
-          b.id AS monthly_base_cost_id
-        FROM public.students s
-        JOIN public.monthly_year_data m ON s.academic_year = m.year::text
-        JOIN public.monthly_base_costs b ON m.monthly_base_id = b.id
-        WHERE b.id = $1 AND m.year::text = ANY($2::text[])
-        ON CONFLICT (student_id, monthly_base_cost_id) DO NOTHING;
-      `, [base_id, yearsStr]);
-    }
+    // 3️⃣ 🚮 Delete ALL mess bills for this base_id
+    await client.query(`
+      DELETE FROM public.mess_bill_for_students
+      WHERE monthly_base_cost_id = $1;
+    `, [base_id]);
 
     await client.query('COMMIT');
 
     res.status(200).json({
-      message: 'Monthly calculation, year data, and mess bills updated successfully',
+      message: 'Monthly calculation updated successfully (all related mess bills deleted)',
       base_id,
       updated_month: fields.month_year
     });
@@ -113,4 +89,4 @@ export const updateMonthlyCalculation = async (req, res) => {
   } finally {
     client.release();
   }
-};  
+};

@@ -1,52 +1,66 @@
-import pool from '../../../database/database.js'; // adjust path
+import pool from '../../../database/database.js';
 
-export const insertMessBillForMonth = async (req, res) => {
+export const upsertSingleMessBill = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { month_year, years } = req.body; // years = [1,2,3,4]
+    const { student_id, monthly_base_cost_id, monthly_year_data_id, mess_bill_id, number_of_days, status } = req.body;
 
-    if (!month_year || !Array.isArray(years)) {
-      return res.status(400).json({ error: "month_year and years array are required" });
+    // ✅ Mandatory fields check
+    if (!student_id || !monthly_base_cost_id || !monthly_year_data_id) {
+      return res.status(400).json({
+        error: "student_id, monthly_base_cost_id, and monthly_year_data_id are required."
+      });
     }
 
-    await client.query('BEGIN'); // Start transaction
+    await client.query('BEGIN');
 
-    // Insert mess bills dynamically for selected years
-    const insertQuery = `
-      INSERT INTO public.mess_bill_for_students
-        (student_id, amount, year_month, monthly_year_data_id, number_of_days, monthly_base_cost_id)
-      SELECT 
-        s.id AS student_id,
-        (COALESCE(m.per_day_amount, 0) * COALESCE(m.total_days, 30)) AS amount,
-        b.month_year AS year_month,
-        m.id AS monthly_year_data_id,
-        COALESCE(m.total_days, 30) AS number_of_days,
-        b.id AS monthly_base_cost_id
-      FROM public.students s
-      JOIN public.monthly_year_data m
-        ON s.academic_year::int = m.year
-      JOIN public.monthly_base_costs b
-        ON m.monthly_base_id = b.id
-      WHERE b.month_year = $1
-        AND m.year = ANY($2::int[])
-      ON CONFLICT (student_id, year_month) DO NOTHING
-      RETURNING *;
-    `;
+    let result;
 
-    const result = await client.query(insertQuery, [month_year, years]);
+    if (!mess_bill_id) {
+      // ➕ Insert new record
+      const insertQuery = `
+        INSERT INTO mess_bill_for_students (
+          student_id, monthly_base_cost_id, monthly_year_data_id, number_of_days, status
+        )
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id;
+      `;
+      result = await client.query(insertQuery, [
+        student_id,
+        monthly_base_cost_id,
+        monthly_year_data_id,
+        number_of_days ?? 30,
+        status ?? 'PENDING'
+      ]);
+    } else {
+      // ♻️ Update existing record
+      const updateQuery = `
+        UPDATE mess_bill_for_students
+        SET
+          number_of_days = $1,
+          status = $2,
+          updated_at = NOW()
+        WHERE id = $3
+        RETURNING id;
+      `;
+      result = await client.query(updateQuery, [
+        number_of_days ?? 30,
+        status ?? 'PENDING',
+        mess_bill_id
+      ]);
+    }
 
     await client.query('COMMIT');
 
-    res.status(201).json({
-      message: `Mess bills inserted successfully for month ${month_year}`,
-      inserted_count: result.rowCount,
-      inserted_rows: result.rows
+    res.status(200).json({
+      message: mess_bill_id ? 'Mess bill updated successfully.' : 'Mess bill inserted successfully.',
+      mess_bill_id: result.rows[0].id
     });
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error inserting mess bills:', error);
+    console.error('Error in upsertSingleMessBill:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   } finally {
     client.release();
