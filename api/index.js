@@ -215,5 +215,4 @@ api.post("/verify-payment", async (req, res) => {
 api.get("/", (req, res) => {
   res.json({ message: "API is running ✅" });
 });
-
 export default api
