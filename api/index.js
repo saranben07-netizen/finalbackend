@@ -107,6 +107,8 @@ import updateshowmessbill from "../routers/admin/messbill/showtostudents.js";
 import updateshowstudentsbydeptyear from "../routers/admin/messbill/bulkstudentshow.js";
 import showMessBillsByIdRouter from "../routers/student/payment/billsfetch.js";
 import sendmessbilltostudentsrouter from "../routers/admin/messbill/sendmessbilltostudents.js";
+import fetchstudentsmessbillnew from "../routers/admin/messbill/fetchstudentsmessbillnew.js";
+import insertstudentmessbillnew from "../routers/admin/messbill/insertstudentmessbillnew.js";
 
 
 
@@ -164,7 +166,8 @@ api.use(updateshowmessbill)
 api.use(updateshowstudentsbydeptyear)
 api.use(showMessBillsByIdRouter)
 api.use(sendmessbilltostudentsrouter)
-
+api.use(fetchstudentsmessbillnew)
+api.use(insertstudentmessbillnew)
 
 api.post("/create-order1", async (req, res) => {
   try {
