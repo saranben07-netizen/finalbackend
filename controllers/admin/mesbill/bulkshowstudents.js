@@ -6,50 +6,48 @@ const bulkUpdateShowForMessBills = async (req, res) => {
   try {
     const { month_year, year, department, show } = req.body;
 
-    // 🚫 Input validation
+    // 🚫 Validation
     if (!month_year || typeof show !== 'boolean') {
       return res.status(400).json({
         error: "Fields 'month_year' and boolean 'show' are required.",
       });
     }
 
-    // 🧾 Base query
-    let updateQuery = `
-      UPDATE mess_bill_for_students AS mbfs
-      SET 
-        show = $1,
-        updated_at = NOW()
-      FROM monthly_base_costs AS mb
-      INNER JOIN monthly_year_data AS myd
-        ON myd.monthly_base_id = mb.id
-      INNER JOIN students AS s
-        ON s.id = mbfs.student_id
-      WHERE 
-        mbfs.monthly_base_cost_id = mb.id
-        AND mbfs.monthly_year_data_id = myd.id
-        AND mb.month_year = $2
+    // 🧾 Subquery to safely filter records
+    let subQuery = `
+      SELECT mbfs.id
+      FROM mess_bill_for_students mbfs
+      JOIN monthly_base_costs mb ON mbfs.monthly_base_cost_id = mb.id
+      JOIN monthly_year_data myd ON mbfs.monthly_year_data_id = myd.id
+      JOIN students s ON s.id = mbfs.student_id
+      WHERE mb.month_year = $1
     `;
 
-    const params = [show, month_year];
-    let paramIndex = 3;
+    const params = [month_year];
+    let paramIndex = 2;
 
-    // 🧩 Optional filters
     if (year) {
-      updateQuery += ` AND myd.year = $${paramIndex++}`;
+      subQuery += ` AND myd.year = $${paramIndex++}`;
       params.push(year);
     }
 
     if (department) {
-      updateQuery += ` AND s.department = $${paramIndex++}`;
+      subQuery += ` AND s.department = $${paramIndex++}`;
       params.push(department);
     }
 
-    updateQuery += ` RETURNING mbfs.id, mbfs.student_id, mbfs.show;`;
+    // 🧾 Update using the subquery
+    const updateQuery = `
+      UPDATE mess_bill_for_students
+      SET show = $${paramIndex}, updated_at = NOW()
+      WHERE id IN (${subQuery})
+      RETURNING id, student_id, show;
+    `;
 
-    // 🔥 Execute query
+    params.push(show);
+
     const result = await client.query(updateQuery, params);
 
-    // ✅ Success response
     return res.status(200).json({
       message: `✅ Updated 'show' = ${show} for ${result.rowCount} record(s) in ${month_year}.`,
       filters: { month_year, year, department },
