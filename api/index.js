@@ -162,7 +162,7 @@ api.use(insertstudentmessbill)
 api.use(fetchstudentsmessbill)
 api.use(updatemessbill)
 api.use(messbillupdate)
-api.use(updateshowmessbill)
+
 api.use(updateshowstudentsbydeptyear)
 api.use(showMessBillsByIdRouter)
 
