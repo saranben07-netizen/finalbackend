@@ -1,82 +1,57 @@
 import pool from '../../../database/database.js';
 
-export const upsertSingleMessBill = async (req, res) => {
+export const updateNumberOfDays = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { student_id, monthly_base_cost_id, monthly_year_data_id, mess_bill_id, number_of_days, status } = req.body;
+    const {
+      student_id,
+      monthly_base_cost_id,
+      monthly_year_data_id,
+      number_of_days
+    } = req.body;
 
-    // ✅ Mandatory fields check
+    // 🚫 Validate inputs
     if (!student_id || !monthly_base_cost_id || !monthly_year_data_id) {
       return res.status(400).json({
         error: "student_id, monthly_base_cost_id, and monthly_year_data_id are required."
       });
     }
 
-    await client.query('BEGIN');
-
-    let result;
-
-    if (!mess_bill_id) {
-      // ➕ Insert new record with ON CONFLICT DO NOTHING
-      const insertQuery = `
-        INSERT INTO mess_bill_for_students (
-          student_id,
-          monthly_base_cost_id,
-          monthly_year_data_id,
-          number_of_days,
-          status,
-          show
-        )
-        VALUES ($1, $2, $3, $4, $5, true)
-        ON CONFLICT (student_id, monthly_base_cost_id, monthly_year_data_id) DO NOTHING
-        RETURNING id;
-      `;
-      result = await client.query(insertQuery, [
-        student_id,
-        monthly_base_cost_id,
-        monthly_year_data_id,
-        number_of_days ?? 30,
-        status ?? 'PENDING'
-      ]);
-
-      if (result.rows.length === 0) {
-        // Conflict occurred — nothing inserted
-        await client.query('COMMIT');
-        return res.status(200).json({
-          message: 'Mess bill already exists. No new record inserted.',
-          mess_bill_id: null
-        });
-      }
-    } else {
-      // ♻️ Update existing record
-      const updateQuery = `
-        UPDATE mess_bill_for_students
-        SET
-          number_of_days = $1,
-          status = $2,
-          updated_at = NOW(),
-          show = true
-        WHERE id = $3
-        RETURNING id;
-      `;
-      result = await client.query(updateQuery, [
-        number_of_days ?? 30,
-        status ?? 'PENDING',
-        mess_bill_id
-      ]);
+    if (number_of_days === undefined || isNaN(number_of_days)) {
+      return res.status(400).json({
+        error: "A valid 'number_of_days' value is required."
+      });
     }
 
-    await client.query('COMMIT');
+    // 🧾 Update query
+    const query = `
+      UPDATE public.mess_bill_for_students
+      SET number_of_days = $1,
+          updated_at = NOW()
+      WHERE student_id = $2
+        AND monthly_base_cost_id = $3
+        AND monthly_year_data_id = $4
+      RETURNING *;
+    `;
+
+    const values = [number_of_days, student_id, monthly_base_cost_id, monthly_year_data_id];
+    const result = await client.query(query, values);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message: "No matching mess bill found for the provided identifiers.",
+        identifiers: { student_id, monthly_base_cost_id, monthly_year_data_id }
+      });
+    }
 
     res.status(200).json({
-      message: mess_bill_id ? 'Mess bill updated successfully.' : 'Mess bill inserted successfully.',
-      mess_bill_id: result.rows[0].id
+      message: "Number of days updated successfully.",
+      updated_record: result.rows[0]
     });
 
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error in upsertSingleMessBill:', error);
+    console.error('❌ Error in updateNumberOfDays:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   } finally {
     client.release();

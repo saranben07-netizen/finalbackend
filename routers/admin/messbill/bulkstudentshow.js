@@ -1,10 +1,10 @@
 // routes/monthlyCalculation.js
 import express from 'express';
-import  updateShowToStudentsByDeptYear  from '../../../controllers/admin/mesbill/bulkshowstudents.js'; // adjust path
+import  bulkUpdateShowForMessBills  from '../../../controllers/admin/mesbill/bulkshowstudents.js'; // adjust path
 
 const updateshowstudentsbydeptyear = express.Router();
 
 // Route to create monthly calculation
-updateshowstudentsbydeptyear.post('/bulkshowmessbill', updateShowToStudentsByDeptYear);
+updateshowstudentsbydeptyear.post('/bulkshowmessbill', bulkUpdateShowForMessBills);
 
 export default  updateshowstudentsbydeptyear;   

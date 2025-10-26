@@ -1,65 +1,65 @@
 import pool from '../../../database/database.js';
 
-const bulkGenerateMessBillsFromYearMonth = async (req, res) => {
+const bulkUpdateShowForMessBills = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { month_year, year, department } = req.body;
+    const { month_year, year, department, show } = req.body;
 
-    if (!month_year) {
-      return res.status(400).json({ error: "month_year is required." });
+    // 🚫 Validation
+    if (!month_year || typeof show !== 'boolean') {
+      return res.status(400).json({
+        error: "month_year and a boolean 'show' value are required."
+      });
     }
 
-    let insertQuery = `
-      INSERT INTO mess_bill_for_students
-        (student_id, monthly_base_cost_id, monthly_year_data_id, number_of_days, show)
-      SELECT
-        s.id,
-        mb.id AS monthly_base_cost_id,
-        myd.id AS monthly_year_data_id,
-        myd.total_days AS number_of_days,
-        true AS show
+    // 🧾 Core update query
+    let updateQuery = `
+      UPDATE mess_bill_for_students mbfs
+      SET show = $1,
+          updated_at = NOW()
       FROM monthly_base_costs mb
       JOIN monthly_year_data myd
         ON myd.monthly_base_id = mb.id
       JOIN students s
-        ON s.academic_year::int = myd.year
-      WHERE mb.month_year = $1
+        ON s.id = mbfs.student_id
+        AND s.academic_year::int = myd.year
+      WHERE mbfs.monthly_base_cost_id = mb.id
+        AND mbfs.monthly_year_data_id = myd.id
+        AND mb.month_year = $2
     `;
 
-    const params = [month_year];
-    let paramIndex = 2;
+    const params = [show, month_year];
+    let paramIndex = 3;
 
+    // Optional filters
     if (year) {
-      insertQuery += ` AND myd.year = $${paramIndex++}`;
+      updateQuery += ` AND myd.year = $${paramIndex++}`;
       params.push(year);
     }
 
     if (department) {
-      insertQuery += ` AND s.department = $${paramIndex++}`;
+      updateQuery += ` AND s.department = $${paramIndex++}`;
       params.push(department);
     }
 
-    insertQuery += `
-      ON CONFLICT (student_id, monthly_base_cost_id, monthly_year_data_id)
-      DO UPDATE SET show = true
-      WHERE mess_bill_for_students.show = false
-      RETURNING id, student_id, show
-    `;
+    updateQuery += ` RETURNING mbfs.id, mbfs.student_id, mbfs.show;`;
 
-    const result = await client.query(insertQuery, params);
+    const result = await client.query(updateQuery, params);
 
+    // ✅ Response
     res.status(200).json({
-      message: `Mess bills inserted/updated successfully for ${result.rowCount} students for ${month_year}.`,
-      affected: result.rows
+      message: `Successfully updated 'show' = ${show} for ${result.rowCount} students for ${month_year}.`,
+      filters: { month_year, year, department },
+      updated_records: result.rows
     });
 
   } catch (error) {
-    console.error("Error generating bulk mess bills from year/month:", error);
+    console.error("❌ Error updating show flag for mess bills:", error);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     client.release();
   }
 };
 
-export default bulkGenerateMessBillsFromYearMonth;
+export default bulkUpdateShowForMessBills;
