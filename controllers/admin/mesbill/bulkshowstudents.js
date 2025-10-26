@@ -6,25 +6,26 @@ const bulkUpdateShowForMessBills = async (req, res) => {
   try {
     const { month_year, year, department, show } = req.body;
 
-    // 🚫 Validation
+    // 🚫 Input validation
     if (!month_year || typeof show !== 'boolean') {
       return res.status(400).json({
-        error: "month_year and a boolean 'show' value are required."
+        error: "Fields 'month_year' and boolean 'show' are required.",
       });
     }
 
-    // 🧾 Core update query
+    // 🧾 Base query
     let updateQuery = `
-      UPDATE mess_bill_for_students mbfs
-      SET show = $1,
-          updated_at = NOW()
-      FROM monthly_base_costs mb
-      JOIN monthly_year_data myd
+      UPDATE mess_bill_for_students AS mbfs
+      SET 
+        show = $1,
+        updated_at = NOW()
+      FROM monthly_base_costs AS mb
+      INNER JOIN monthly_year_data AS myd
         ON myd.monthly_base_id = mb.id
-      JOIN students s
+      INNER JOIN students AS s
         ON s.id = mbfs.student_id
-        AND s.academic_year::int = myd.year
-      WHERE mbfs.monthly_base_cost_id = mb.id
+      WHERE 
+        mbfs.monthly_base_cost_id = mb.id
         AND mbfs.monthly_year_data_id = myd.id
         AND mb.month_year = $2
     `;
@@ -32,7 +33,7 @@ const bulkUpdateShowForMessBills = async (req, res) => {
     const params = [show, month_year];
     let paramIndex = 3;
 
-    // Optional filters
+    // 🧩 Optional filters
     if (year) {
       updateQuery += ` AND myd.year = $${paramIndex++}`;
       params.push(year);
@@ -45,18 +46,19 @@ const bulkUpdateShowForMessBills = async (req, res) => {
 
     updateQuery += ` RETURNING mbfs.id, mbfs.student_id, mbfs.show;`;
 
+    // 🔥 Execute query
     const result = await client.query(updateQuery, params);
 
-    // ✅ Response
-    res.status(200).json({
-      message: `Successfully updated 'show' = ${show} for ${result.rowCount} students for ${month_year}.`,
+    // ✅ Success response
+    return res.status(200).json({
+      message: `✅ Updated 'show' = ${show} for ${result.rowCount} record(s) in ${month_year}.`,
       filters: { month_year, year, department },
-      updated_records: result.rows
+      updated_records: result.rows,
     });
 
   } catch (error) {
     console.error("❌ Error updating show flag for mess bills:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   } finally {
     client.release();
   }
