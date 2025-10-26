@@ -165,7 +165,7 @@ api.use(messbillupdate)
 api.use(updateshowmessbill)
 api.use(updateshowstudentsbydeptyear)
 api.use(showMessBillsByIdRouter)
-api.use(sendmessbilltostudentsrouter)
+
 api.use(fetchstudentsmessbillnew)
 api.use(insertstudentmessbillnew)
 
