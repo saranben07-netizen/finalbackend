@@ -27,24 +27,28 @@ export default async function paymentWebhook(req, res) {
 
     // Extract important data
     const eventData = req.body;
-    console.log(eventData)
-    const orderId = eventData.order_id;              // custom order ID you generated
-    const cfOrderId = eventData.data.payment_gateway_details.gateway_order_id;         // Cashfree's internal order ID
-    const orderStatus = eventData.data.payment.payment_status;      // Example: "PAID", "FAILED", etc.
-
-    // Decide your internal status
-    
+    const orderId = eventData.order_id; // your custom order ID
+    const cfOrderId = eventData.data.payment_gateway_details.gateway_order_id; // Cashfree's order ID
+    const orderStatus = eventData.data.payment.payment_status; // Example: "SUCCESS", "FAILED", etc.
 
     // ✅ Update your database
-    await pool.query(
-      `UPDATE mess_bill_for_students 
-       SET status = $1, updated_at = NOW() 
-       WHERE latest_order_id = $2`,
-      [orderStatus, cfOrderId]
-    );
+    if (orderStatus === "SUCCESS") {
+      await pool.query(
+        `UPDATE mess_bill_for_students 
+         SET status = $1, updated_at = NOW(), paid_date = NOW()
+         WHERE latest_order_id = $2`,
+        [orderStatus, cfOrderId]
+      );
+    } else {
+      await pool.query(
+        `UPDATE mess_bill_for_students 
+         SET status = $1, updated_at = NOW()
+         WHERE latest_order_id = $2`,
+        [orderStatus, cfOrderId]
+      );
+    }
 
     console.log(`✅ Updated order (${orderId}) to status: ${orderStatus}`);
-
     res.status(200).json({ success: true });
   } catch (err) {
     console.error("❌ Webhook error:", err.message);
