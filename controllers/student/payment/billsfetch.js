@@ -1,6 +1,6 @@
 import pool from '../../../database/database.js';
 
-const showMessBillsByStudentId = async (req, res) => {
+const showPaidMessBillsByStudentId = async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -21,6 +21,11 @@ const showMessBillsByStudentId = async (req, res) => {
         mb.latest_order_id,
         mb.created_at,
         mb.updated_at,
+        mb.show,
+        mb.verified,
+        mb.isveg,
+        mb.veg_days,
+        mb.non_veg_days,
         mbc.month_year,
         mbc.grocery_cost,
         mbc.vegetable_cost,
@@ -36,27 +41,27 @@ const showMessBillsByStudentId = async (req, res) => {
       LEFT JOIN monthly_base_costs mbc
         ON mb.monthly_base_cost_id = mbc.id
       WHERE mb.student_id = $1
-        AND mb.show = true  -- Exclude paid bills
+        AND mb.status = 'SUCCESS'  -- Only paid bills
       ORDER BY mbc.month_year DESC NULLS LAST;
     `;
 
     const result = await client.query(query, [student_id]);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No mess bills found for this student." });
+      return res.status(404).json({ message: "No paid mess bills found for this student." });
     }
 
     res.json({
       success: true,
-      message: "Mess bills fetched successfully",
+      message: "Paid mess bills fetched successfully",
       data: result.rows,
     });
   } catch (error) {
     console.error("Error fetching mess bills:", error);
-    res.status(500).json({ error: "Failed to fetch mess bills" });
+    res.status(500).json({ error: "Failed to fetch paid mess bills" });
   } finally {
     client.release();
   }
 };
 
-export default showMessBillsByStudentId;
+export default showPaidMessBillsByStudentId;
