@@ -37,7 +37,7 @@ const showMessBillsByStudentId = async (req, res) => {
         ON mb.monthly_base_cost_id = mbc.id
       WHERE mb.student_id = $1
         AND mb.show = true
-        AND mb.status != 'PAID'  -- Exclude paid bills
+        AND mb.status != 'SUCCESS'  -- Exclude paid bills
       ORDER BY mbc.month_year DESC NULLS LAST;
     `;
 
