@@ -111,6 +111,7 @@ import fetchstudentsmessbillnew from "../routers/admin/messbill/fetchstudentsmes
 import insertstudentmessbillnew from "../routers/admin/messbill/insertstudentmessbillnew.js";
 import showmessbilltoall from "../routers/admin/messbill/showmessbilltoall.js";
 import updateVerifiedStatusrouter from "../routers/admin/messbill/updateVerifiedStatus.js";
+import checkMessVerificationStatusrouter from "../routers/admin/messbill/checkMessVerificationStatus.js";
 
 
 
@@ -172,6 +173,7 @@ api.use(fetchstudentsmessbillnew)
 api.use(insertstudentmessbillnew)
 api.use(showmessbilltoall)
 api.use(updateVerifiedStatusrouter)
+api.use(checkMessVerificationStatusrouter)
 
 api.post("/create-order1", async (req, res) => {
   try {
