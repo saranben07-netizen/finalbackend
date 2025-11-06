@@ -33,10 +33,16 @@ const showPaidMessBillsByStudentId = async (req, res) => {
         mbc.total_milk_litres,
         mbc.milk_cost_per_litre,
         mbc.milk_charges_computed,
-        mbc.other_costs,
+        mbc.deductions_income,
+        mbc.veg_extra_per_day,
+        mbc.nonveg_extra_per_day,
         mbc.total_expenditure,
         mbc.expenditure_after_income,
-        mbc.mess_fee_per_day
+        mbc.mess_fee_per_day,
+        mbc.progress_stage,
+        mbc.veg_served_days,
+        mbc.nonveg_served_days,
+        mbc.reduction_applicable_days
       FROM mess_bill_for_students mb
       LEFT JOIN monthly_base_costs mbc
         ON mb.monthly_base_cost_id = mbc.id
