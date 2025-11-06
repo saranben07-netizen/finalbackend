@@ -19,6 +19,7 @@ const showPaidMessBillsByStudentId = async (req, res) => {
         mb.number_of_days,
         mb.status,
         mb.latest_order_id,
+        mb.paid_date,        -- Added paid_date
         mb.created_at,
         mb.updated_at,
         mb.show,
