@@ -4,7 +4,7 @@ const showMessBillsByStudentId = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { student_id } = req.body; // could also use req.query for GET requests
+    const { student_id } = req.body; // or req.query for GET requests
 
     if (!student_id) {
       return res.status(400).json({ error: "student_id is required" });
@@ -37,6 +37,7 @@ const showMessBillsByStudentId = async (req, res) => {
         ON mb.monthly_base_cost_id = mbc.id
       WHERE mb.student_id = $1
         AND mb.show = true
+        AND mb.status != 'PAID'  -- Exclude paid bills
       ORDER BY mbc.month_year DESC NULLS LAST;
     `;
 
