@@ -4,8 +4,11 @@ export const fetchMonthlyCalculations = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // 1️⃣ Fetch base costs with exactly 4 years per month
-    const query = `
+    
+    const { year } = req.body;
+
+    // Build base query dynamically
+    let query = `
       SELECT 
         b.id AS monthly_base_costs_id,
         b.month_year,
@@ -23,19 +26,33 @@ export const fetchMonthlyCalculations = async (req, res) => {
         b.expenditure_after_income,
         b.mess_fee_per_day,
         b.created_at,
-        all_years.year,
+        b.progress_stage,
+        b.veg_served_days,
+        b.nonveg_served_days,
+        b.reduction_applicable_days,
+        y.id AS monthly_year_data_id,
+        y.year,
         y.total_students,
-        y.total_days
+        y.total_days,
+        y.created_at AS year_data_created_at
       FROM public.monthly_base_costs b
-      CROSS JOIN (VALUES (1),(2),(3),(4)) AS all_years(year)
       LEFT JOIN public.monthly_year_data y
-        ON y.monthly_base_id = b.id AND y.year = all_years.year
-      ORDER BY b.created_at DESC, all_years.year;
+        ON y.monthly_base_id = b.id
     `;
 
-    const result = await client.query(query);
+    const values = [];
 
-    // 2️⃣ Group by month (monthly_base_costs_id)
+    // ✅ Apply year filter if provided
+    if (year) {
+      query += ` WHERE b.month_year LIKE $1 `;
+      values.push(`%${year}`);
+    }
+
+    query += ` ORDER BY b.created_at DESC, y.year ASC;`;
+
+    const result = await client.query(query, values);
+
+    // ✅ Group results by each base month
     const grouped = {};
     result.rows.forEach(row => {
       const id = row.monthly_base_costs_id;
@@ -48,7 +65,7 @@ export const fetchMonthlyCalculations = async (req, res) => {
           vegetable_cost: row.vegetable_cost,
           gas_charges: row.gas_charges,
           total_milk_litres: row.total_milk_litres,
-          milk_cost_per_litre: row.milk_cost_per_litres,
+          milk_cost_per_litre: row.milk_cost_per_litre,
           milk_charges_computed: row.milk_charges_computed,
           other_costs: row.other_costs,
           deductions_income: row.deductions_income,
@@ -57,27 +74,36 @@ export const fetchMonthlyCalculations = async (req, res) => {
           total_expenditure: row.total_expenditure,
           expenditure_after_income: row.expenditure_after_income,
           mess_fee_per_day: row.mess_fee_per_day,
+          progress_stage: row.progress_stage,
+          veg_served_days: row.veg_served_days,
+          nonveg_served_days: row.nonveg_served_days,
+          reduction_applicable_days: row.reduction_applicable_days,
           created_at: row.created_at,
           years_data: []
         };
       }
 
-      grouped[id].years_data.push({
-        year: row.year,
-        total_students: row.total_students,
-        total_days: row.total_days
-      });
+      if (row.year !== null) {
+        grouped[id].years_data.push({
+          monthly_year_data_id: row.monthly_year_data_id,
+          year: row.year,
+          total_students: row.total_students,
+          total_days: row.total_days,
+          created_at: row.year_data_created_at
+        });
+      }
     });
 
     const finalResult = Object.values(grouped);
 
     res.status(200).json({
-      message: 'Monthly calculations fetched successfully',
+      message: `✅ Monthly calculations fetched successfully${year ? ` for year ${year}` : ''}`,
+      count: finalResult.length,
       data: finalResult
     });
 
   } catch (error) {
-    console.error('Error fetching monthly calculations:', error);
+    console.error('❌ Error fetching monthly calculations:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   } finally {
     client.release();
