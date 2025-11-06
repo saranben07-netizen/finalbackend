@@ -4,18 +4,18 @@ export const updateMessBill = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { id, number_of_days, verified, isveg } = req.body;
+    const { id, number_of_days, verified, isveg, veg_days, non_veg_days } = req.body;
 
     // 🔒 Validation
     if (!id) {
       return res.status(400).json({ error: "id (mess_bill_id) is required" });
     }
 
-    // 🧠 Build dynamic update query
     const fields = [];
     const values = [];
     let idx = 1;
 
+    // 🧠 Build dynamic fields
     if (number_of_days !== undefined) {
       fields.push(`number_of_days = $${idx}`);
       values.push(number_of_days);
@@ -32,17 +32,36 @@ export const updateMessBill = async (req, res) => {
       fields.push(`isveg = $${idx}`);
       values.push(isveg);
       idx++;
+
+      // 🌱 Logic based on veg/non-veg selection
+      if (isveg === true) {
+        // Veg case → assign veg_days, reset non_veg_days
+        const vegValue = veg_days !== undefined ? veg_days : 30; // default 30 or your logic
+        fields.push(`veg_days = $${idx}`);
+        values.push(vegValue);
+        idx++;
+
+        fields.push(`non_veg_days = 0`);
+      } else if (isveg === false) {
+        // Non-veg case → assign non_veg_days, reset veg_days
+        const nonVegValue = non_veg_days !== undefined ? non_veg_days : 30;
+        fields.push(`non_veg_days = $${idx}`);
+        values.push(nonVegValue);
+        idx++;
+
+        fields.push(`veg_days = 0`);
+      }
     }
 
-    // If nothing to update
+    // 🧩 No fields to update
     if (fields.length === 0) {
       return res.status(400).json({ error: "No fields provided to update" });
     }
 
-    // Add id (WHERE condition)
+    // WHERE condition
     values.push(id);
 
-    // 🧩 Construct final query
+    // 🧾 Construct SQL query
     const updateQuery = `
       UPDATE public.mess_bill_for_students
       SET ${fields.join(', ')}, updated_at = NOW()
@@ -50,7 +69,7 @@ export const updateMessBill = async (req, res) => {
       RETURNING *;
     `;
 
-    // Execute update
+    // Execute query
     const result = await client.query(updateQuery, values);
 
     // Handle not found

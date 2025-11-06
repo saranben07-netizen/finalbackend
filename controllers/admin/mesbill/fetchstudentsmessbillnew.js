@@ -6,14 +6,14 @@ export const fetchMessBills = async (req, res) => {
   try {
     const { month_year, department, academic_year } = req.body;
 
-    // 🚫 Mandatory fields check
+    // 🚫 Mandatory fields validation
     if (!month_year || !department || !academic_year) {
       return res.status(400).json({
         error: "month_year, department, and academic_year are required fields."
       });
     }
 
-    // 🧾 Query without show_to_students column
+    // 🧠 Updated Query — includes veg/non-veg extra cost logic
     const query = `
       SELECT 
         s.id AS student_id,
@@ -25,16 +25,40 @@ export const fetchMessBills = async (req, res) => {
         mbc.id AS monthly_base_cost_id,
         mbc.month_year AS mess_bill_month,
         mbc.mess_fee_per_day,
+        mbc.veg_extra_per_day,
+        mbc.nonveg_extra_per_day,
 
         myd.id AS monthly_year_data_id,
         myd.total_days AS total_days_in_month,
 
         mbfs.id AS mess_bill_id,
         mbfs.status AS payment_status,
-       
-        -- ✅ Calculated fields
+        mbfs.number_of_days,
+        mbfs.verified,
+        mbfs.isveg,
+        mbfs.veg_days,
+        mbfs.non_veg_days,
+        mbfs.created_at,
+        mbfs.updated_at,
+
+        -- ✅ Determine effective days
         COALESCE(mbfs.number_of_days, myd.total_days) AS effective_number_of_days,
-        COALESCE(mbfs.number_of_days, myd.total_days) * mbc.mess_fee_per_day AS total_amount
+
+        -- ✅ Revised Veg/Non-Veg Calculation
+        CASE
+          WHEN mbfs.isveg = TRUE THEN 
+            (
+              COALESCE(mbfs.veg_days, 0) * mbc.veg_extra_per_day
+              + COALESCE(mbfs.number_of_days, myd.total_days) * mbc.mess_fee_per_day
+            )
+          WHEN mbfs.isveg = FALSE THEN 
+            (
+              COALESCE(mbfs.non_veg_days, 0) * mbc.nonveg_extra_per_day
+              + COALESCE(mbfs.number_of_days, myd.total_days) * mbc.mess_fee_per_day
+            )
+          ELSE 
+            COALESCE(mbfs.number_of_days, myd.total_days) * mbc.mess_fee_per_day
+        END AS total_amount
 
       FROM monthly_base_costs mbc
       JOIN monthly_year_data myd 
@@ -54,7 +78,6 @@ export const fetchMessBills = async (req, res) => {
     `;
 
     const values = [month_year, department, academic_year];
-
     const result = await client.query(query, values);
 
     if (result.rows.length === 0) {
@@ -64,6 +87,7 @@ export const fetchMessBills = async (req, res) => {
       });
     }
 
+    // ✅ Success
     res.status(200).json({
       message: "Mess bill data fetched successfully.",
       filters: { month_year, department, academic_year },
@@ -72,7 +96,7 @@ export const fetchMessBills = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error in fetchMessBills:', error);
+    console.error('❌ Error in fetchMessBills:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   } finally {
     client.release();
