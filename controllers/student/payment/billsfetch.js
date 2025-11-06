@@ -47,8 +47,7 @@ const showPaidMessBillsByStudentId = async (req, res) => {
       FROM mess_bill_for_students mb
       LEFT JOIN monthly_base_costs mbc
         ON mb.monthly_base_cost_id = mbc.id
-      WHERE mb.student_id = $1
-        AND mb.status = 'SUCCESS'  -- Only paid bills
+      WHERE mb.student_id = $1 
       ORDER BY mbc.month_year DESC NULLS LAST;
     `;
 
