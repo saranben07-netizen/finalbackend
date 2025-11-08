@@ -4,20 +4,18 @@ export const updateShowFlagByMonthYear = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { month_year, show } = req.body;
+    const { month_year } = req.body;
 
     // ✅ Basic validation
-    if (!month_year || typeof show !== 'boolean') {
+    if (!month_year) {
       return res.status(400).json({
-        error: 'month_year (string) and show (boolean) are required.'
+        error: 'month_year (string) is required.'
       });
     }
 
     // ✅ Get monthly_base_cost record
     const baseResult = await client.query(
-      `SELECT id, progress_stage 
-         FROM monthly_base_costs 
-        WHERE month_year = $1`,
+      `SELECT id FROM monthly_base_costs WHERE month_year = $1`,
       [month_year]
     );
 
@@ -25,34 +23,35 @@ export const updateShowFlagByMonthYear = async (req, res) => {
       return res.status(404).json({ error: 'month_year not found.' });
     }
 
-    const { id: monthly_base_cost_id, progress_stage } = baseResult.rows[0];
+    const { id: monthly_base_cost_id } = baseResult.rows[0];
 
-    // ✅ If show = false → allow anytime (no verification restriction)
-    if (show === false) {
-      const updateResult = await client.query(
-        `UPDATE mess_bill_for_students
-            SET show = false,
-                updated_at = NOW()
-          WHERE monthly_base_cost_id = $1
-          RETURNING id, student_id, show;`,
-        [monthly_base_cost_id]
-      );
+    // ✅ Check verification status for all students
+    const verifyCheck = await client.query(
+      `SELECT COUNT(*) FILTER (WHERE verified = false OR verified IS NULL) AS unverified_count,
+              COUNT(*) AS total_count
+         FROM mess_bill_for_students
+        WHERE monthly_base_cost_id = $1`,
+      [monthly_base_cost_id]
+    );
 
-      return res.status(200).json({
-        message: `✅ Show flag set to false for ${updateResult.rowCount} records.`,
-        data: updateResult.rows
+    const { unverified_count, total_count } = verifyCheck.rows[0];
+
+    if (parseInt(total_count) === 0) {
+      return res.status(404).json({
+        message: `❌ No student records found for month_year '${month_year}'.`
       });
     }
 
-    // ✅ If trying to set show = true, ensure progress_stage = 'FULLY_VERIFIED'
-    if (progress_stage !== 'FULLY_VERIFIED') {
+    if (parseInt(unverified_count) > 0) {
       return res.status(400).json({
-        message: `❌ Cannot update show flag. The progress_stage for '${month_year}' is '${progress_stage}'.`,
-        hint: 'Only FULLY_VERIFIED months are allowed to show.'
+        message: `❌ Cannot update show flag. Only ${
+          total_count - unverified_count
+        } of ${total_count} students are verified.`,
+        hint: 'All students must be verified before showing.'
       });
     }
 
-    // ✅ All verified — update show flag to true
+    // ✅ All verified → update show = true
     const updateResult = await client.query(
       `UPDATE mess_bill_for_students
           SET show = true,
@@ -63,7 +62,7 @@ export const updateShowFlagByMonthYear = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: `✅ Month '${month_year}' is FULLY_VERIFIED — show flag updated for ${updateResult.rowCount} records.`,
+      message: `✅ All ${total_count} students are verified — show flag set to true for ${updateResult.rowCount} records.`,
       data: updateResult.rows
     });
 
