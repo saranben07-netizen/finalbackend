@@ -98,6 +98,7 @@ async function createorder(req, res) {
       order_note: `Mess bill for ${year_month}`,
       order_meta: {
         notify_url: "https://finalbackend1.vercel.app/webhook/",
+        return_url:"https://chozha-boys-hostel-management-syste.vercel.app/dashboard"
       },
       order_tags: {
         student_id: student_id,
